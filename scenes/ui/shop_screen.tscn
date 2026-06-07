@@ -1,0 +1,177 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/shop_screen.gd" id="1_shop"]
+
+[node name="ShopScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_shop")
+
+[node name="Dim" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.06, 0.14, 0.72)
+
+[node name="Panel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = -360.0
+offset_right = 320.0
+offset_bottom = 360.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 22
+
+[node name="VBox" type="VBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="TitleLabel" type="Label" parent="Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+text = "SHOP"
+horizontal_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Coin packs & boosters coming soon"
+horizontal_alignment = 1
+
+[node name="OfferRow" type="HBoxContainer" parent="Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="OfferCoins" type="PanelContainer" parent="Panel/Margin/VBox/OfferRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="OfferCoinsMargin" type="MarginContainer" parent="Panel/Margin/VBox/OfferRow/OfferCoins"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 14
+
+[node name="OfferCoinsVBox" type="VBoxContainer" parent="Panel/Margin/VBox/OfferRow/OfferCoins/OfferCoinsMargin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="Icon" type="Label" parent="Panel/Margin/VBox/OfferRow/OfferCoins/OfferCoinsMargin/OfferCoinsVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 42
+text = "🪙"
+horizontal_alignment = 1
+
+[node name="Name" type="Label" parent="Panel/Margin/VBox/OfferRow/OfferCoins/OfferCoinsMargin/OfferCoinsVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "500 Coins"
+horizontal_alignment = 1
+
+[node name="Price" type="Label" parent="Panel/Margin/VBox/OfferRow/OfferCoins/OfferCoinsMargin/OfferCoinsVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Soon"
+horizontal_alignment = 1
+
+[node name="OfferBoost" type="PanelContainer" parent="Panel/Margin/VBox/OfferRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="OfferBoostMargin" type="MarginContainer" parent="Panel/Margin/VBox/OfferRow/OfferBoost"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 14
+
+[node name="OfferBoostVBox" type="VBoxContainer" parent="Panel/Margin/VBox/OfferRow/OfferBoost/OfferBoostMargin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="Icon" type="Label" parent="Panel/Margin/VBox/OfferRow/OfferBoost/OfferBoostMargin/OfferBoostVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 42
+text = "⚡"
+horizontal_alignment = 1
+
+[node name="Name" type="Label" parent="Panel/Margin/VBox/OfferRow/OfferBoost/OfferBoostMargin/OfferBoostVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Booster Pack"
+horizontal_alignment = 1
+
+[node name="Price" type="Label" parent="Panel/Margin/VBox/OfferRow/OfferBoost/OfferBoostMargin/OfferBoostVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Soon"
+horizontal_alignment = 1
+
+[node name="OfferLives" type="PanelContainer" parent="Panel/Margin/VBox/OfferRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="OfferLivesMargin" type="MarginContainer" parent="Panel/Margin/VBox/OfferRow/OfferLives"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 14
+
+[node name="OfferLivesVBox" type="VBoxContainer" parent="Panel/Margin/VBox/OfferRow/OfferLives/OfferLivesMargin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="Icon" type="Label" parent="Panel/Margin/VBox/OfferRow/OfferLives/OfferLivesMargin/OfferLivesVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 42
+text = "❤️"
+horizontal_alignment = 1
+
+[node name="Name" type="Label" parent="Panel/Margin/VBox/OfferRow/OfferLives/OfferLivesMargin/OfferLivesVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Refill Lives"
+horizontal_alignment = 1
+
+[node name="Price" type="Label" parent="Panel/Margin/VBox/OfferRow/OfferLives/OfferLivesMargin/OfferLivesVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Soon"
+horizontal_alignment = 1
+
+[node name="CloseButton" type="Button" parent="Panel/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+text = "CLOSE"

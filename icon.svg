@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="512" y1="0" x2="512" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#527aad"/>
+      <stop offset="1" stop-color="#143885"/>
+    </linearGradient>
+    <radialGradient id="glow5" cx="512" cy="512" r="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#338cff" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#338cff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <circle cx="512" cy="512" r="420" fill="url(#glow5)"/>
+  <circle cx="512" cy="512" r="400" fill="#338cff" fill-opacity="0.13"/>
+  <circle cx="512" cy="512" r="378" fill="#338cff" fill-opacity="0.18"/>
+  <circle cx="512" cy="512" r="356" fill="#338cff" fill-opacity="0.23"/>
+  <circle cx="512" cy="512" r="334" fill="#338cff" fill-opacity="0.28"/>
+  <circle cx="512" cy="512" r="312" fill="#338cff" fill-opacity="0.33"/>
+  <circle cx="512" cy="512" r="399" fill="#1f52b8" fill-opacity="0.35"/>
+  <circle cx="512" cy="512" r="397" fill="none" stroke="#73c7ff" stroke-width="16" stroke-opacity="0.95"/>
+  <circle cx="512" cy="512" r="365" fill="#0a0f1f"/>
+  <circle cx="512" cy="512" r="280" fill="#000005"/>
+  <circle cx="403" cy="388" r="54" fill="#8cd1ff" fill-opacity="0.4"/>
+</svg>

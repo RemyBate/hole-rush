@@ -1,0 +1,430 @@
+WorkerThreadPool: 8 threads, 6 max low-priority.
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+TextServer: Added interface "Dummy"
+TextServer: Added interface "ICU / HarfBuzz / Graphite (Built-in)"
+Unrecognized output string "misc2" in mapping:
+030000008a2e0000dd10000000000000,Hand Held Legend GC Ultimate,a:b0,b:b2,back:b17,dpdown:b5,dpleft:b6,dpright:b7,dpup:b4,guide:b18,leftshoulder:b10,leftstick:b8,lefttrigger:a3,leftx:a0,lefty:a1,misc1:b19,misc2:b24,paddle1:b13,paddle2:b12,rightshoulder:b11,rightstick:b9,righttrigger:a4,rightx:a2,righty:a5,start:b16,x:b1,y:b3,platform:Windows,
+Unrecognized output string "misc2" in mapping:
+030000000d0f00000202000000000000,Horipad O Nintendo Switch 2 Controller,a:b1,b:b0,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b4,leftstick:b10,lefttrigger:b6,leftx:a0,lefty:a1,misc1:b13,misc2:b14,rightshoulder:b5,rightstick:b11,righttrigger:b7,rightx:a2,righty:a3,start:b9,x:b3,y:b2,platform:Windows,
+Unrecognized output string "misc2" in mapping:
+030000000d0f00009601000000000000,Horipad Steam,a:b0,b:b1,back:b10,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b13,lefttrigger:b8,leftx:a0,lefty:a1,misc2:b2,paddle1:b5,paddle2:b15,paddle3:b18,paddle4:b19,rightshoulder:b7,rightstick:b14,righttrigger:b9,rightx:a3,righty:a4,start:b11,x:b3,y:b4,platform:Windows,
+Unrecognized output string "misc2" in mapping:
+030000007e0500006920000000000000,Nintendo Switch 2 Pro Controller,a:b0,b:b1,back:b14,dpdown:b8,dpleft:b10,dpright:b9,dpup:b11,guide:b16,leftshoulder:b12,leftstick:b15,lefttrigger:b13,leftx:a0,lefty:a1~,misc1:b17,misc2:b20,paddle1:b18,paddle2:b19,rightshoulder:b4,rightstick:b7,righttrigger:b5,rightx:a2,righty:a3~,start:b6,x:b2,y:b3,platform:Windows,
+Using "default" pen tablet driver...
+
+TextServer: Primary interface set to: "ICU / HarfBuzz / Graphite (Built-in)".
+CORE API HASH: 4039755037
+EDITOR API HASH: 223528947
+SceneTreeFTI: traversal method DEFAULT
+Loading resource: C:/Users/RemyB/AppData/Roaming/Godot/editor_settings-4.6.tres
+EditorSettings: Load OK!
+EditorTheme: Generating new theme for the config '3810048042'.
+EditorTheme: Generating new icons.
+EditorTheme: Generating new fonts.
+EditorTheme: Generating new styles.
+Loading resource: C:/Users/RemyB/AppData/Local/Godot/editor_doc_cache-4.6.res
+Loaded system CA certificates
+Failed to bind socket. Error: 3.
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+Loading resource: res://scripts/game_constants.gd
+Loading resource: res://scripts/game_settings.gd
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mexport[22m | Started Exporting for Android (105 steps)[39m[0m
+Exporting for Android...
+- debug build: false
+- export path: c:\Users\RemyB\Documents\hole-rush\build\HoleRush-release.aab
+- export format: 1
+- sign build: true
+- gradle build enabled: true
+- apk expansion enabled: false
+- enabled abis: armeabi-v7a,arm64-v8a
+- export filter: 0
+- include filter: 
+- exclude filter: 
+Loading regular icon from res://assets/branding/android/main_192x192.png
+Loading resource: res://assets/branding/android/main_192x192.png
+Loading resource: res://.godot/imported/main_192x192.png-db399ee41a20c9fa8469732789efca6a.ctex
+Loading adaptive foreground icon from res://assets/branding/android/adaptive_foreground_432x432.png
+Loading resource: res://assets/branding/android/adaptive_foreground_432x432.png
+Loading resource: res://.godot/imported/adaptive_foreground_432x432.png-62ae530b72b0efa145244d28e84668f9.ctex
+Loading adaptive background icon from res://assets/branding/android/adaptive_background_432x432.png
+Loading resource: res://assets/branding/android/adaptive_background_432x432.png
+Loading resource: res://.godot/imported/adaptive_background_432x432.png-d61b33a7adb684fabd2403bf055d697e.ctex
+0 param: --xr_mode_regular
+1 param: --xr-mode
+2 param: off
+3 param: --fullscreen
+4 param: --background_color
+5 param: #153885
+Starting gradle build...
+Checking build version...
+- build version: 4.6.2.stable
+Java sdk path: C:/Program Files/Android/Android Studio/jbr
+Android sdk path: C:\Users\RemyB\AppData\Local/Android/Sdk
+Creating strings resources for supported locales for project Hole Rush
+Processing launcher icon for dimension 192 into res/mipmap-xxxhdpi-v4/icon.webp
+Processing launcher adaptive icon p_foreground for dimension 432 into res/mipmap-xxxhdpi-v4/icon_foreground.webp
+Processing launcher adaptive icon p_background for dimension 432 into res/mipmap-xxxhdpi-v4/icon_background.webp
+Processing launcher icon for dimension 144 into res/mipmap-xxhdpi-v4/icon.webp
+Processing launcher adaptive icon p_foreground for dimension 324 into res/mipmap-xxhdpi-v4/icon_foreground.webp
+Processing launcher adaptive icon p_background for dimension 324 into res/mipmap-xxhdpi-v4/icon_background.webp
+Processing launcher icon for dimension 96 into res/mipmap-xhdpi-v4/icon.webp
+Processing launcher adaptive icon p_foreground for dimension 216 into res/mipmap-xhdpi-v4/icon_foreground.webp
+Processing launcher adaptive icon p_background for dimension 216 into res/mipmap-xhdpi-v4/icon_background.webp
+Processing launcher icon for dimension 72 into res/mipmap-hdpi-v4/icon.webp
+Processing launcher adaptive icon p_foreground for dimension 162 into res/mipmap-hdpi-v4/icon_foreground.webp
+Processing launcher adaptive icon p_background for dimension 162 into res/mipmap-hdpi-v4/icon_background.webp
+Processing launcher icon for dimension 48 into res/mipmap-mdpi-v4/icon.webp
+Processing launcher adaptive icon p_foreground for dimension 108 into res/mipmap-mdpi-v4/icon_foreground.webp
+Processing launcher adaptive icon p_background for dimension 108 into res/mipmap-mdpi-v4/icon_background.webp
+Processing launcher icon for dimension 192 into res/mipmap/icon.webp
+Processing launcher adaptive icon p_foreground for dimension 432 into res/mipmap/icon_foreground.webp
+Processing launcher adaptive icon p_background for dimension 432 into res/mipmap/icon_background.webp
+Building temporary manifest...
+Storing manifest into res://android/build/src/release/AndroidManifest.xml: 
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <supports-screens 
+        tools:node="replace"
+        android:smallScreens="true"
+        android:normalScreens="true"
+        android:largeScreens="true"
+        android:xlargeScreens="true" />
+    <uses-feature android:glEsVersion="0x00030000" android:required="true" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-feature tools:node="replace" android:name="android.hardware.vulkan.level" android:required="false" android:version="1" />
+    <uses-feature tools:node="replace" android:name="android.hardware.vulkan.version" android:required="true" android:version="0x400003" />
+    <application android:label="@string/godot_project_name_string"
+        android:allowBackup="false"
+        android:icon="@mipmap/icon"
+        android:isGame="true"
+        android:hasFragileUserData="false"
+        android:requestLegacyExternalStorage="false"
+        android:appCategory="game"
+        tools:replace="android:allowBackup,android:appCategory,android:isGame,android:hasFragileUserData,android:requestLegacyExternalStorage"
+        tools:ignore="GoogleAppIndexingWarning">
+
+        <meta-data tools:node="replace" android:name="org.godotengine.rendering.method" android:value="mobile" />
+        <meta-data tools:node="replace" android:name="org.godotengine.editor.version" android:value="4.6.2.stable" />
+        <activity android:name=".GodotApp" tools:replace="android:screenOrientation,android:excludeFromRecents,android:resizeableActivity" tools:node="mergeOnlyAttributes" android:excludeFromRecents="false" android:screenOrientation="portrait" android:resizeableActivity="true">
+        </activity>
+        <activity-alias
+            tools:node="mergeOnlyAttributes"
+            android:name=".GodotAppLauncher"
+            android:targetActivity=".GodotApp"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+    </application>
+</manifest>
+
+Successfully modified res://android/build/res/values/themes.xml: 
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<!-- GodotAppMainTheme is auto-generated during export. Manual changes will be overwritten.
+		 To add custom attributes, use the "gradle_build/custom_theme_attributes" Android export option. -->
+	<style name="GodotAppMainTheme" parent="@android:style/Theme.DeviceDefault.NoActionBar">
+		<item name="android:windowSwipeToDismiss">false</item>
+		<item name="android:windowIsTranslucent">false</item>
+		<item name="android:windowBackground">#153885</item>
+	</style>
+
+	<!-- GodotAppSplashTheme is auto-generated during export. Manual changes will be overwritten.
+		 To add custom attributes, use the "gradle_build/custom_theme_attributes" Android export option. -->
+	<style name="GodotAppSplashTheme" parent="Theme.SplashScreen">
+		<item name="android:windowSplashScreenBackground">@mipmap/icon_background</item>
+		<item name="windowSplashScreenAnimatedIcon">@mipmap/icon_foreground</item>
+		<item name="postSplashScreenTheme">@style/GodotAppMainTheme</item>
+		<item name="android:windowIsTranslucent">false</item>
+	</style>
+</resources>
+
+Removing previously installed libraries...
+No previously installed libraries found
+Exporting project files...
+Saving project files from res://.godot/imported/adaptive_background_432x432.png-d61b33a7adb684fabd2403bf055d697e.ctex into res://android/build/assetPackInstallTime/src/main/assets/.godot/imported/adaptive_background_432x432.png-d61b33a7adb684fabd2403bf055d697e.ctex
+Saving project files from res://assets/branding/android/adaptive_background_432x432.png.import into res://android/build/assetPackInstallTime/src/main/assets/assets/branding/android/adaptive_background_432x432.png.import
+Saving project files from res://.godot/imported/adaptive_foreground_432x432.png-62ae530b72b0efa145244d28e84668f9.ctex into res://android/build/assetPackInstallTime/src/main/assets/.godot/imported/adaptive_foreground_432x432.png-62ae530b72b0efa145244d28e84668f9.ctex
+Saving project files from res://assets/branding/android/adaptive_foreground_432x432.png.import into res://android/build/assetPackInstallTime/src/main/assets/assets/branding/android/adaptive_foreground_432x432.png.import
+Saving project files from res://.godot/imported/main_192x192.png-db399ee41a20c9fa8469732789efca6a.ctex into res://android/build/assetPackInstallTime/src/main/assets/.godot/imported/main_192x192.png-db399ee41a20c9fa8469732789efca6a.ctex
+Saving project files from res://assets/branding/android/main_192x192.png.import into res://android/build/assetPackInstallTime/src/main/assets/assets/branding/android/main_192x192.png.import
+Saving project files from res://.godot/imported/icon_512.png-b0a0f3c1e45ad24b747817803e90ab5a.ctex into res://android/build/assetPackInstallTime/src/main/assets/.godot/imported/icon_512.png-b0a0f3c1e45ad24b747817803e90ab5a.ctex
+Saving project files from res://assets/branding/icon_512.png.import into res://android/build/assetPackInstallTime/src/main/assets/assets/branding/icon_512.png.import
+Saving project files from res://.godot/imported/icon_1024.png-a439509fa579b87dc124670ed5095753.ctex into res://android/build/assetPackInstallTime/src/main/assets/.godot/imported/icon_1024.png-a439509fa579b87dc124670ed5095753.ctex
+Saving project files from res://assets/branding/icon_1024.png.import into res://android/build/assetPackInstallTime/src/main/assets/assets/branding/icon_1024.png.import
+Saving project files from res://.godot/imported/splash.png-a72a27554cb62887caefe5a446ee840d.ctex into res://android/build/assetPackInstallTime/src/main/assets/.godot/imported/splash.png-a72a27554cb62887caefe5a446ee840d.ctex
+Saving project files from res://assets/branding/splash.png.import into res://android/build/assetPackInstallTime/src/main/assets/assets/branding/splash.png.import
+Saving project files from res://.godot/imported/coin_collect.wav-9f6b06c24bdd5a8da93f4a7da5c4e669.sample into res://android/build/assetPackInstallTime/src/main/assets/.godot/imported/coin_collect.wav-9f6b06c24bdd5a8da93f4a7da5c4e669.sample
+Saving project files from res://audio/coin_collect.wav.import into res://android/build/assetPackInstallTime/src/main/assets/audio/coin_collect.wav.import
+Saving project files from res://.godot/imported/lose_tone.wav-1680719b56309c1f382c4d4c62b424d4.sample into res://android/build/assetPackInstallTime/src/main/assets/.godot/imported/lose_tone.wav-1680719b56309c1f382c4d4c62b424d4.sample
+Saving project files from res://audio/lose_tone.wav.import into res://android/build/assetPackInstallTime/src/main/assets/audio/lose_tone.wav.import
+Saving project files from res://.godot/imported/music_loop.wav-a2c468b25b3a434d633bc88d82f0f834.sample into res://android/build/assetPackInstallTime/src/main/assets/.godot/imported/music_loop.wav-a2c468b25b3a434d633bc88d82f0f834.sample
+Saving project files from res://audio/music_loop.wav.import into res://android/build/assetPackInstallTime/src/main/assets/audio/music_loop.wav.import
+Saving project files from res://.godot/imported/ui_click.wav-0e8ea9171a5aa44f52d6e6fd79ed475c.sample into res://android/build/assetPackInstallTime/src/main/assets/.godot/imported/ui_click.wav-0e8ea9171a5aa44f52d6e6fd79ed475c.sample
+Saving project files from res://audio/ui_click.wav.import into res://android/build/assetPackInstallTime/src/main/assets/audio/ui_click.wav.import
+Saving project files from res://.godot/imported/win_jingle.wav-1dc6dfa64b4f00048ed2f92aae3fe2e0.sample into res://android/build/assetPackInstallTime/src/main/assets/.godot/imported/win_jingle.wav-1dc6dfa64b4f00048ed2f92aae3fe2e0.sample
+Saving project files from res://audio/win_jingle.wav.import into res://android/build/assetPackInstallTime/src/main/assets/audio/win_jingle.wav.import
+Saving project files from res://.godot/exported/133200997/export-ba494dd9b051bd79084501bcfe9f90ed-game_over_screen.scn into res://android/build/assetPackInstallTime/src/main/assets/.godot/exported/133200997/export-ba494dd9b051bd79084501bcfe9f90ed-game_over_screen.scn
+Saving project files from res://.godot/exported/133200997/export-3266e1dc3f1bdce9ad6cb4facbce07f9-home_screen.scn into res://android/build/assetPackInstallTime/src/main/assets/.godot/exported/133200997/export-3266e1dc3f1bdce9ad6cb4facbce07f9-home_screen.scn
+Saving project files from res://.godot/exported/133200997/export-f26fe175837e58804f1c48b99041ac16-hud.scn into res://android/build/assetPackInstallTime/src/main/assets/.godot/exported/133200997/export-f26fe175837e58804f1c48b99041ac16-hud.scn
+Saving project files from res://.godot/exported/133200997/export-a776a008bf4a06f33bfbd223c8ebd189-info_popup.scn into res://android/build/assetPackInstallTime/src/main/assets/.godot/exported/133200997/export-a776a008bf4a06f33bfbd223c8ebd189-info_popup.scn
+Saving project files from res://.godot/exported/133200997/export-c12b1efc5c1d37c35d29f4eefbe6c380-level_prep_screen.scn into res://android/build/assetPackInstallTime/src/main/assets/.godot/exported/133200997/export-c12b1efc5c1d37c35d29f4eefbe6c380-level_prep_screen.scn
+Saving project files from res://.godot/exported/133200997/export-c4a3dae50c4c1afa22344d29c3b82a22-settings_popup.scn into res://android/build/assetPackInstallTime/src/main/assets/.godot/exported/133200997/export-c4a3dae50c4c1afa22344d29c3b82a22-settings_popup.scn
+Saving project files from res://.godot/exported/133200997/export-69c28d1528fafc9fbd318c4443905271-shop_screen.scn into res://android/build/assetPackInstallTime/src/main/assets/.godot/exported/133200997/export-69c28d1528fafc9fbd318c4443905271-shop_screen.scn
+Saving project files from res://.godot/exported/133200997/export-db536e82e7d4aa4cfaea1eb1dcfdce06-victory_screen.scn into res://android/build/assetPackInstallTime/src/main/assets/.godot/exported/133200997/export-db536e82e7d4aa4cfaea1eb1dcfdce06-victory_screen.scn
+Saving project files from res://.godot/exported/133200997/export-497eea743e10fed3b8c3669bf90592c7-currency_pickup.scn into res://android/build/assetPackInstallTime/src/main/assets/.godot/exported/133200997/export-497eea743e10fed3b8c3669bf90592c7-currency_pickup.scn
+Saving project files from res://.godot/exported/133200997/export-9454b54796fb1c0f457509f0cd010127-food.scn into res://android/build/assetPackInstallTime/src/main/assets/.godot/exported/133200997/export-9454b54796fb1c0f457509f0cd010127-food.scn
+Saving project files from res://.godot/exported/133200997/export-c2a7af834e91ff64325daddf58e45dc0-game.scn into res://android/build/assetPackInstallTime/src/main/assets/.godot/exported/133200997/export-c2a7af834e91ff64325daddf58e45dc0-game.scn
+Saving project files from res://.godot/exported/133200997/export-d34eecff327637d2474c67d5dd1f3e2b-hole.scn into res://android/build/assetPackInstallTime/src/main/assets/.godot/exported/133200997/export-d34eecff327637d2474c67d5dd1f3e2b-hole.scn
+Saving project files from res://.godot/exported/133200997/export-3ad5c15c4f3250da0cc7c1af1770d85f-main.scn into res://android/build/assetPackInstallTime/src/main/assets/.godot/exported/133200997/export-3ad5c15c4f3250da0cc7c1af1770d85f-main.scn
+Saving project files from res://scripts/booster_data.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/booster_data.gdc
+Saving project files from res://scripts/collectible_art.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/collectible_art.gdc
+Saving project files from res://scripts/collect_fx.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/collect_fx.gdc
+Saving project files from res://scripts/currency_art.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/currency_art.gdc
+Saving project files from res://scripts/currency_pickup.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/currency_pickup.gdc
+Saving project files from res://scripts/currency_spawner.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/currency_spawner.gdc
+Saving project files from res://scripts/draw_utils.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/draw_utils.gdc
+Saving project files from res://scripts/floating_feedback.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/floating_feedback.gdc
+Saving project files from res://scripts/food.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/food.gdc
+Saving project files from res://scripts/food_art.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/food_art.gdc
+Saving project files from res://scripts/food_spawner.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/food_spawner.gdc
+Saving project files from res://scripts/game.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/game.gdc
+Saving project files from res://scripts/game_constants.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/game_constants.gdc
+Saving project files from res://scripts/game_over_screen.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/game_over_screen.gdc
+Saving project files from res://scripts/game_settings.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/game_settings.gdc
+Saving project files from res://scripts/gold_coin_icon.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/gold_coin_icon.gdc
+Saving project files from res://scripts/grow_fx.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/grow_fx.gdc
+Saving project files from res://scripts/hole.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/hole.gdc
+Saving project files from res://scripts/hole_pit_visual.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/hole_pit_visual.gdc
+Saving project files from res://scripts/hole_rim_visual.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/hole_rim_visual.gdc
+Saving project files from res://scripts/hole_rush_icon.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/hole_rush_icon.gdc
+Saving project files from res://scripts/home_background.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/home_background.gdc
+Saving project files from res://scripts/home_screen.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/home_screen.gdc
+Saving project files from res://scripts/hud.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/hud.gdc
+Saving project files from res://scripts/info_popup.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/info_popup.gdc
+Saving project files from res://scripts/item_size_tier.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/item_size_tier.gdc
+Saving project files from res://scripts/level_layout.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/level_layout.gdc
+Saving project files from res://scripts/level_prep_screen.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/level_prep_screen.gdc
+Saving project files from res://scripts/level_theme.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/level_theme.gdc
+Saving project files from res://scripts/main.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/main.gdc
+Saving project files from res://scripts/mission.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/mission.gdc
+Saving project files from res://scripts/mission_factory.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/mission_factory.gdc
+Saving project files from res://scripts/picnic_art.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/picnic_art.gdc
+Saving project files from res://scripts/play_area.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/play_area.gdc
+Saving project files from res://scripts/scene_transition.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/scene_transition.gdc
+Saving project files from res://scripts/settings_popup.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/settings_popup.gdc
+Saving project files from res://scripts/shop_screen.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/shop_screen.gdc
+Saving project files from res://scripts/theme_background.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/theme_background.gdc
+Saving project files from res://scripts/ui_styles.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/ui_styles.gdc
+Saving project files from res://scripts/victory_screen.gdc into res://android/build/assetPackInstallTime/src/main/assets/scripts/victory_screen.gdc
+Saving project files from res://shaders/ui_backdrop_blur.gdshader into res://android/build/assetPackInstallTime/src/main/assets/shaders/ui_backdrop_blur.gdshader
+Saving project files from res://tools/test2.gdc into res://android/build/assetPackInstallTime/src/main/assets/tools/test2.gdc
+Saving project files from res://tools/test_settings.gdc into res://android/build/assetPackInstallTime/src/main/assets/tools/test_settings.gdc
+Saving project files from res://tools/validate_scenes.gdc into res://android/build/assetPackInstallTime/src/main/assets/tools/validate_scenes.gdc
+Saving project files from res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex into res://android/build/assetPackInstallTime/src/main/assets/.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex
+Saving project files from res://icon.svg.import into res://android/build/assetPackInstallTime/src/main/assets/icon.svg.import
+Saving project files from res://scenes/ui/game_over_screen.tscn.remap into res://android/build/assetPackInstallTime/src/main/assets/scenes/ui/game_over_screen.tscn.remap
+Saving project files from res://scenes/ui/home_screen.tscn.remap into res://android/build/assetPackInstallTime/src/main/assets/scenes/ui/home_screen.tscn.remap
+Saving project files from res://scenes/ui/hud.tscn.remap into res://android/build/assetPackInstallTime/src/main/assets/scenes/ui/hud.tscn.remap
+Saving project files from res://scenes/ui/info_popup.tscn.remap into res://android/build/assetPackInstallTime/src/main/assets/scenes/ui/info_popup.tscn.remap
+Saving project files from res://scenes/ui/level_prep_screen.tscn.remap into res://android/build/assetPackInstallTime/src/main/assets/scenes/ui/level_prep_screen.tscn.remap
+Saving project files from res://scenes/ui/settings_popup.tscn.remap into res://android/build/assetPackInstallTime/src/main/assets/scenes/ui/settings_popup.tscn.remap
+Saving project files from res://scenes/ui/shop_screen.tscn.remap into res://android/build/assetPackInstallTime/src/main/assets/scenes/ui/shop_screen.tscn.remap
+Saving project files from res://scenes/ui/victory_screen.tscn.remap into res://android/build/assetPackInstallTime/src/main/assets/scenes/ui/victory_screen.tscn.remap
+Saving project files from res://scenes/currency_pickup.tscn.remap into res://android/build/assetPackInstallTime/src/main/assets/scenes/currency_pickup.tscn.remap
+Saving project files from res://scenes/food.tscn.remap into res://android/build/assetPackInstallTime/src/main/assets/scenes/food.tscn.remap
+Saving project files from res://scenes/game.tscn.remap into res://android/build/assetPackInstallTime/src/main/assets/scenes/game.tscn.remap
+Saving project files from res://scenes/hole.tscn.remap into res://android/build/assetPackInstallTime/src/main/assets/scenes/hole.tscn.remap
+Saving project files from res://scenes/main.tscn.remap into res://android/build/assetPackInstallTime/src/main/assets/scenes/main.tscn.remap
+Saving project files from res://scripts/booster_data.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/booster_data.gd.remap
+Saving project files from res://scripts/collectible_art.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/collectible_art.gd.remap
+Saving project files from res://scripts/collect_fx.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/collect_fx.gd.remap
+Saving project files from res://scripts/currency_art.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/currency_art.gd.remap
+Saving project files from res://scripts/currency_pickup.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/currency_pickup.gd.remap
+Saving project files from res://scripts/currency_spawner.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/currency_spawner.gd.remap
+Saving project files from res://scripts/draw_utils.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/draw_utils.gd.remap
+Saving project files from res://scripts/floating_feedback.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/floating_feedback.gd.remap
+Saving project files from res://scripts/food.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/food.gd.remap
+Saving project files from res://scripts/food_art.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/food_art.gd.remap
+Saving project files from res://scripts/food_spawner.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/food_spawner.gd.remap
+Saving project files from res://scripts/game.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/game.gd.remap
+Saving project files from res://scripts/game_constants.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/game_constants.gd.remap
+Saving project files from res://scripts/game_over_screen.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/game_over_screen.gd.remap
+Saving project files from res://scripts/game_settings.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/game_settings.gd.remap
+Saving project files from res://scripts/gold_coin_icon.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/gold_coin_icon.gd.remap
+Saving project files from res://scripts/grow_fx.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/grow_fx.gd.remap
+Saving project files from res://scripts/hole.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/hole.gd.remap
+Saving project files from res://scripts/hole_pit_visual.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/hole_pit_visual.gd.remap
+Saving project files from res://scripts/hole_rim_visual.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/hole_rim_visual.gd.remap
+Saving project files from res://scripts/hole_rush_icon.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/hole_rush_icon.gd.remap
+Saving project files from res://scripts/home_background.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/home_background.gd.remap
+Saving project files from res://scripts/home_screen.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/home_screen.gd.remap
+Saving project files from res://scripts/hud.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/hud.gd.remap
+Saving project files from res://scripts/info_popup.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/info_popup.gd.remap
+Saving project files from res://scripts/item_size_tier.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/item_size_tier.gd.remap
+Saving project files from res://scripts/level_layout.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/level_layout.gd.remap
+Saving project files from res://scripts/level_prep_screen.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/level_prep_screen.gd.remap
+Saving project files from res://scripts/level_theme.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/level_theme.gd.remap
+Saving project files from res://scripts/main.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/main.gd.remap
+Saving project files from res://scripts/mission.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/mission.gd.remap
+Saving project files from res://scripts/mission_factory.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/mission_factory.gd.remap
+Saving project files from res://scripts/picnic_art.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/picnic_art.gd.remap
+Saving project files from res://scripts/play_area.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/play_area.gd.remap
+Saving project files from res://scripts/scene_transition.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/scene_transition.gd.remap
+Saving project files from res://scripts/settings_popup.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/settings_popup.gd.remap
+Saving project files from res://scripts/shop_screen.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/shop_screen.gd.remap
+Saving project files from res://scripts/theme_background.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/theme_background.gd.remap
+Saving project files from res://scripts/ui_styles.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/ui_styles.gd.remap
+Saving project files from res://scripts/victory_screen.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/scripts/victory_screen.gd.remap
+Saving project files from res://tools/test2.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/tools/test2.gd.remap
+Saving project files from res://tools/test_settings.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/tools/test_settings.gd.remap
+Saving project files from res://tools/validate_scenes.gd.remap into res://android/build/assetPackInstallTime/src/main/assets/tools/validate_scenes.gd.remap
+Saving project files from res://.godot/global_script_class_cache.cfg into res://android/build/assetPackInstallTime/src/main/assets/.godot/global_script_class_cache.cfg
+Saving project files from res://icon.svg into res://android/build/assetPackInstallTime/src/main/assets/icon.svg
+Saving project files from res://.godot/uid_cache.bin into res://android/build/assetPackInstallTime/src/main/assets/.godot/uid_cache.bin
+Saving project files from res://project.binary into res://android/build/assetPackInstallTime/src/main/assets/project.binary
+Storing command line flags...
+Updating JAVA_HOME environment to C:/Program Files/Android/Android Studio/jbr
+Updating ANDROID_HOME environment to C:\Users\RemyB\AppData\Local/Android/Sdk
+Build Android project using gradle command: 
+C:/Users/RemyB/Documents/hole-rush/android/build/gradlew.bat validateJavaVersion clean bundleStandardRelease -p C:/Users/RemyB/Documents/hole-rush/android/build -Paddons_directory=C:/Users/RemyB/Documents/hole-rush/addons -Pexport_package_name=com.holerush.game -Pexport_version_code=1 -Pexport_version_name=1.0.0 -Pexport_version_min_sdk=24 -Pexport_version_target_sdk=35 -Pexport_enabled_abis=armeabi-v7a|arm64-v8a -Pplugins_local_binaries= -Pplugins_remote_binaries= -Pplugins_maven_repos= -Pperform_zipalign=true -Pperform_signing=true -Pcompress_native_libraries=false
+Thread exit status: 0
+Downloading https://services.gradle.org/distributions/gradle-8.11.1-bin.zip
+.............10%.............20%.............30%.............40%.............50%.............60%.............70%.............80%.............90%.............100%
+
+Welcome to Gradle 8.11.1!
+
+Here are the highlights of this release:
+ - Parallel load and store for Configuration Cache
+ - Java compilation errors at the end of the build output
+ - Consolidated report for warnings and deprecations
+
+For more details see https://docs.gradle.org/8.11.1/release-notes.html
+
+Starting a Gradle Daemon (subsequent builds will be faster)
+
+> Configure project :
+WARNING: The option setting 'android.overridePathCheck=true' is experimental.
+The current default is 'false'.
+
+> Task :validateJavaVersion UP-TO-DATE
+> Task :clean UP-TO-DATE
+> Task :assetPackInstallTime:clean UP-TO-DATE
+> Task :preBuild UP-TO-DATE
+> Task :preStandardReleaseBuild UP-TO-DATE
+> Task :assetPackInstallTime:generateAssetPackManifest
+> Task :generateStandardReleaseResValues
+> Task :processStandardReleaseAssetPackManifests
+> Task :mapStandardReleaseSourceSetPaths
+> Task :generateStandardReleaseResources
+> Task :linkStandardReleaseManifestForAssetPacks
+> Task :createStandardReleaseCompatibleScreenManifests
+> Task :extractDeepLinksStandardRelease
+> Task :assetPackStandardReleasePreBundleTask
+> Task :mergeStandardReleaseResources
+
+> Task :processStandardReleaseMainManifest
+C:\Users\RemyB\Documents\hole-rush\android\build\src\release\AndroidManifest.xml:12:5-132 Warning:
+	uses-feature#android.hardware.vulkan.level was tagged at AndroidManifest.xml:12 to replace another declaration but no other declaration present
+C:\Users\RemyB\Documents\hole-rush\android\build\src\release\AndroidManifest.xml:13:5-140 Warning:
+	uses-feature#android.hardware.vulkan.version was tagged at AndroidManifest.xml:13 to replace another declaration but no other declaration present
+C:\Users\RemyB\Documents\hole-rush\android\build\src\release\AndroidManifest.xml:24:9-114 Warning:
+	meta-data#org.godotengine.rendering.method was tagged at AndroidManifest.xml:24 to replace another declaration but no other declaration present
+C:\Users\RemyB\Documents\hole-rush\android\build\src\release\AndroidManifest.xml:25:9-118 Warning:
+	meta-data#org.godotengine.editor.version was tagged at AndroidManifest.xml:25 to replace another declaration but no other declaration present
+
+> Task :processStandardReleaseManifest
+> Task :processApplicationManifestStandardReleaseForBundle
+> Task :checkStandardReleaseAarMetadata
+> Task :packageStandardReleaseResources
+> Task :extractStandardReleaseVersionControlInfo
+> Task :parseStandardReleaseLocalResources
+> Task :checkStandardReleaseDuplicateClasses
+> Task :buildKotlinToolingMetadata
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :generateStandardReleaseBuildConfig
+> Task :javaPreCompileStandardRelease
+> Task :mergeStandardReleaseStartupProfile
+> Task :mergeStandardReleaseShaders
+> Task :compileStandardReleaseShaders NO-SOURCE
+> Task :generateStandardReleaseAssets UP-TO-DATE
+> Task :mergeStandardReleaseAssets
+> Task :mergeStandardReleaseJniLibFolders
+> Task :writeStandardReleaseAppMetadata
+> Task :processStandardReleaseManifestForPackage
+> Task :mergeStandardReleaseArtProfile
+> Task :collectStandardReleaseDependencies
+> Task :configureStandardReleaseDependencies
+> Task :parseStandardReleaseIntegrityConfig
+> Task :validateSigningStandardRelease
+> Task :mergeStandardReleaseNativeLibs
+> Task :processStandardReleaseResources
+> Task :compileStandardReleaseKotlin NO-SOURCE
+> Task :bundleStandardReleaseResources
+> Task :desugarStandardReleaseFileDependencies
+> Task :compileStandardReleaseJavaWithJavac
+> Task :dexBuilderStandardRelease
+> Task :mergeStandardReleaseGlobalSynthetics
+> Task :processStandardReleaseJavaRes
+> Task :mergeStandardReleaseJavaResource
+
+> Task :stripStandardReleaseDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libc++_shared.so, libgodot_android.so.
+
+> Task :mergeExtDexStandardRelease
+> Task :mergeDexStandardRelease
+> Task :buildStandardReleasePreBundle
+> Task :compileStandardReleaseArtProfile
+> Task :packageStandardReleaseBundle
+> Task :signStandardReleaseBundle
+> Task :produceStandardReleaseBundleIdeListingFile
+> Task :createStandardReleaseBundleListingFileRedirect
+> Task :bundleStandardRelease
+
+BUILD SUCCESSFUL in 2m
+52 actionable tasks: 50 executed, 2 up-to-date
+
+Copying Android binary using gradle command: 
+C:/Users/RemyB/Documents/hole-rush/android/build/gradlew.bat copyAndRenameBinary -p C:/Users/RemyB/Documents/hole-rush/android/build -Pexport_edition=standard -Pexport_build_type=release -Pexport_format=aab -Pexport_path=file:c:/Users/RemyB/Documents/hole-rush/build -Pexport_filename=HoleRush-release.aab
+Thread exit status: 0
+
+> Configure project :
+WARNING: The option setting 'android.overridePathCheck=true' is experimental.
+The current default is 'false'.
+
+> Task :copyAndRenameBinary
+Passing invalid URIs to URI or File converting methods. This behavior has been deprecated. This will fail with an error in Gradle 9.0. Use a valid URL or a file path instead. Consult the upgrading guide for further information: https://docs.gradle.org/8.11.1/userguide/upgrading_version_8.html#deprecated_invalid_url_decoding
+[Incubating] Problems report is available at: file:///C:/Users/RemyB/Documents/hole-rush/android/build/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 1s
+1 actionable task: 1 executed
+
+Successfully completed Android gradle build.
+[92m[ DONE ][39m [1mexport[22m
+[0m
+Failed to bind socket. Error: 3.
+WARNING: Scan thread aborted...
+   at: _notification (editor/file_system/editor_file_system.cpp:1729)
+Script docs haven't been properly loaded or regenerated, so don't save them to disk.
+EditorSettings: Save OK!
+XR: Clearing primary interface
+XR: Removed interface "Native mobile"
+XR: Removed interface "OpenXR"
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)
+Leaked instance: EditorFileSystemDirectory:1654803992923
+Hint: Leaked instances typically happen when nodes are removed from the scene tree (with `remove_child()`) but not freed (with `free()` or `queue_free()`).
+Orphan StringName: Node (static: 3, total: 4)
+StringName: 1 unclaimed string names at exit.

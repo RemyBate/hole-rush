@@ -1,0 +1,442 @@
+[gd_scene format=3 uid="uid://bvictory001"]
+
+[ext_resource type="Script" uid="uid://cmrg8ee6vn5j5" path="res://scripts/victory_screen.gd" id="1_victory"]
+
+[node name="VictoryScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_victory")
+
+[node name="Dim" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.02, 0.05, 0.12, 0.35)
+
+[node name="Blur" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="FireworkHost" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="SparkleHost" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Content" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 36.0
+offset_top = 48.0
+offset_right = -36.0
+offset_bottom = -48.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="StarsRow" type="HBoxContainer" parent="Content"]
+layout_mode = 2
+theme_override_constants/separation = 28
+alignment = 1
+
+[node name="Star1" type="Control" parent="Content/StarsRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+
+[node name="Halo" type="ColorRect" parent="Content/StarsRow/Star1"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -52.0
+offset_top = -52.0
+offset_right = 52.0
+offset_bottom = 52.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 0.85, 0.2, 0.35)
+
+[node name="Icon" type="Label" parent="Content/StarsRow/Star1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 64
+text = "★"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Star2" type="Control" parent="Content/StarsRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(110, 110)
+layout_mode = 2
+
+[node name="Halo" type="ColorRect" parent="Content/StarsRow/Star2"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -58.0
+offset_top = -58.0
+offset_right = 58.0
+offset_bottom = 58.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 0.85, 0.2, 0.35)
+
+[node name="Icon" type="Label" parent="Content/StarsRow/Star2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 72
+text = "★"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Star3" type="Control" parent="Content/StarsRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+
+[node name="Halo" type="ColorRect" parent="Content/StarsRow/Star3"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -52.0
+offset_top = -52.0
+offset_right = 52.0
+offset_bottom = 52.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 0.85, 0.2, 0.35)
+
+[node name="Icon" type="Label" parent="Content/StarsRow/Star3"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 64
+text = "★"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BannerPanel" type="PanelContainer" parent="Content"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="BannerMargin" type="MarginContainer" parent="Content/BannerPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 10
+
+[node name="BannerLabel" type="Label" parent="Content/BannerPanel/BannerMargin"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 42
+text = "Excellent"
+horizontal_alignment = 1
+
+[node name="RewardsRow" type="HBoxContainer" parent="Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="KeyColumn" type="VBoxContainer" parent="Content/RewardsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="KeyIcon" type="Label" parent="Content/RewardsRow/KeyColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 52
+text = "🔑"
+horizontal_alignment = 1
+
+[node name="KeyValue" type="Label" parent="Content/RewardsRow/KeyColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "0"
+horizontal_alignment = 1
+
+[node name="TrophyColumn" type="VBoxContainer" parent="Content/RewardsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="TrophyIcon" type="Label" parent="Content/RewardsRow/TrophyColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 52
+text = "🏆"
+horizontal_alignment = 1
+
+[node name="TrophyValue" type="Label" parent="Content/RewardsRow/TrophyColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "0"
+horizontal_alignment = 1
+
+[node name="CoinColumn" type="VBoxContainer" parent="Content/RewardsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="CoinIcon" type="Label" parent="Content/RewardsRow/CoinColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 52
+text = "🪙"
+horizontal_alignment = 1
+
+[node name="CoinValue" type="Label" parent="Content/RewardsRow/CoinColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "0"
+horizontal_alignment = 1
+
+[node name="GemColumn" type="VBoxContainer" parent="Content/RewardsRow"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="GemIcon" type="Label" parent="Content/RewardsRow/GemColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 52
+text = "💎"
+horizontal_alignment = 1
+
+[node name="GemValue" type="Label" parent="Content/RewardsRow/GemColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "0"
+horizontal_alignment = 1
+
+[node name="CoinSummary" type="Label" parent="Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "0 + 0 = 0 coins"
+horizontal_alignment = 1
+
+[node name="ProgressSection" type="VBoxContainer" parent="Content"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ProgressTrack" type="Panel" parent="Content/ProgressSection"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ProgressFill" type="ColorRect" parent="Content/ProgressSection/ProgressTrack"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 6.0
+offset_bottom = 50.0
+mouse_filter = 2
+color = Color(1, 0.88, 0.25, 0.28)
+
+[node name="SegmentRow" type="HBoxContainer" parent="Content/ProgressSection/ProgressTrack"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 4
+
+[node name="Seg1" type="Panel" parent="Content/ProgressSection/ProgressTrack/SegmentRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 100.0
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="Content/ProgressSection/ProgressTrack/SegmentRow/Seg1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.08, 0.08, 0.1, 1)
+theme_override_font_sizes/font_size = 20
+text = "100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Seg2" type="Panel" parent="Content/ProgressSection/ProgressTrack/SegmentRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 120.0
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="Content/ProgressSection/ProgressTrack/SegmentRow/Seg2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.08, 0.08, 0.1, 1)
+theme_override_font_sizes/font_size = 20
+text = "120"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Seg3" type="Panel" parent="Content/ProgressSection/ProgressTrack/SegmentRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 200.0
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="Content/ProgressSection/ProgressTrack/SegmentRow/Seg3"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.08, 0.08, 0.1, 1)
+theme_override_font_sizes/font_size = 20
+text = "200"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Seg4" type="Panel" parent="Content/ProgressSection/ProgressTrack/SegmentRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 120.0
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="Content/ProgressSection/ProgressTrack/SegmentRow/Seg4"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.08, 0.08, 0.1, 1)
+theme_override_font_sizes/font_size = 20
+text = "120"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Seg5" type="Panel" parent="Content/ProgressSection/ProgressTrack/SegmentRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 100.0
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="Content/ProgressSection/ProgressTrack/SegmentRow/Seg5"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.08, 0.08, 0.1, 1)
+theme_override_font_sizes/font_size = 20
+text = "100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ProgressArrow" type="Label" parent="Content/ProgressSection/ProgressTrack"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 52.0
+offset_right = 20.0
+offset_bottom = 72.0
+theme_override_colors/font_color = Color(1, 0.9, 0.25, 1)
+theme_override_font_sizes/font_size = 22
+text = "▲"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="Content"]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BonusButton" type="Button" parent="Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 30
+text = "🎬   +100 🪙"
+
+[node name="ContinueButton" type="Button" parent="Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 36
+text = "CONTINUE"

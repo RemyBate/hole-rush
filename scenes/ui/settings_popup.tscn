@@ -1,0 +1,383 @@
+[gd_scene load_steps=3 format=3 uid="uid://csett01popup1x"]
+
+[ext_resource type="Script" path="res://scripts/settings_popup.gd" id="1_settings"]
+[ext_resource type="PackedScene" uid="uid://cinfo01popup1x" path="res://scenes/ui/info_popup.tscn" id="2_info"]
+
+[node name="SettingsPopup" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_settings")
+
+[node name="Dim" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.02, 0.06, 0.14, 0.65)
+
+[node name="Panel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 28.0
+offset_top = 72.0
+offset_right = -28.0
+offset_bottom = -72.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="OuterMargin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 18
+
+[node name="VBox" type="VBoxContainer" parent="Panel/OuterMargin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Header" type="HBoxContainer" parent="Panel/OuterMargin/VBox"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Panel/OuterMargin/VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.04, 0.08, 0.18, 0.95)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 44
+text = "Settings"
+horizontal_alignment = 1
+
+[node name="CloseButton" type="Button" parent="Panel/OuterMargin/VBox/Header"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(68, 68)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 30
+text = "✕"
+
+[node name="InnerPanel" type="PanelContainer" parent="Panel/OuterMargin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="InnerMargin" type="MarginContainer" parent="Panel/OuterMargin/VBox/InnerPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="Content" type="VBoxContainer" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="ToggleSection" type="PanelContainer" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ToggleSectionMargin" type="MarginContainer" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/ToggleSection"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 14
+
+[node name="ToggleRow" type="HBoxContainer" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/ToggleSection/ToggleSectionMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="MusicColumn" type="VBoxContainer" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/ToggleSection/ToggleSectionMargin/ToggleRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="MusicLabel" type="Label" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/ToggleSection/ToggleSectionMargin/ToggleRow/MusicColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.05, 0.1, 0.2, 0.95)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 24
+text = "Music"
+horizontal_alignment = 1
+
+[node name="MusicButton" type="Button" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/ToggleSection/ToggleSectionMargin/ToggleRow/MusicColumn"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 44
+text = "🎵"
+
+[node name="MusicSlash" type="ColorRect" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/ToggleSection/ToggleSectionMargin/ToggleRow/MusicColumn/MusicButton"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.95, 0.2, 0.25, 0.75)
+
+[node name="SlashLine" type="ColorRect" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/ToggleSection/ToggleSectionMargin/ToggleRow/MusicColumn/MusicButton/MusicSlash"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -46.0
+offset_top = -6.0
+offset_right = 46.0
+offset_bottom = 6.0
+grow_horizontal = 2
+grow_vertical = 2
+rotation = 0.785398
+color = Color(1, 0.35, 0.4, 1)
+
+[node name="SoundColumn" type="VBoxContainer" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/ToggleSection/ToggleSectionMargin/ToggleRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="SoundLabel" type="Label" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/ToggleSection/ToggleSectionMargin/ToggleRow/SoundColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.05, 0.1, 0.2, 0.95)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 24
+text = "Sound"
+horizontal_alignment = 1
+
+[node name="SoundButton" type="Button" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/ToggleSection/ToggleSectionMargin/ToggleRow/SoundColumn"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 44
+text = "🔊"
+
+[node name="SoundSlash" type="ColorRect" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/ToggleSection/ToggleSectionMargin/ToggleRow/SoundColumn/SoundButton"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.95, 0.2, 0.25, 0.75)
+
+[node name="SlashLine" type="ColorRect" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/ToggleSection/ToggleSectionMargin/ToggleRow/SoundColumn/SoundButton/SoundSlash"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -46.0
+offset_top = -6.0
+offset_right = 46.0
+offset_bottom = 6.0
+grow_horizontal = 2
+grow_vertical = 2
+rotation = 0.785398
+color = Color(1, 0.35, 0.4, 1)
+
+[node name="VibrationColumn" type="VBoxContainer" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/ToggleSection/ToggleSectionMargin/ToggleRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="VibrationLabel" type="Label" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/ToggleSection/ToggleSectionMargin/ToggleRow/VibrationColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.05, 0.1, 0.2, 0.95)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 24
+text = "Vibration"
+horizontal_alignment = 1
+
+[node name="VibrationButton" type="Button" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/ToggleSection/ToggleSectionMargin/ToggleRow/VibrationColumn"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 40
+text = "📳"
+
+[node name="VibrationSlash" type="ColorRect" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/ToggleSection/ToggleSectionMargin/ToggleRow/VibrationColumn/VibrationButton"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.95, 0.2, 0.25, 0.75)
+
+[node name="SlashLine" type="ColorRect" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/ToggleSection/ToggleSectionMargin/ToggleRow/VibrationColumn/VibrationButton/VibrationSlash"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -46.0
+offset_top = -6.0
+offset_right = 46.0
+offset_bottom = 6.0
+grow_horizontal = 2
+grow_vertical = 2
+rotation = 0.785398
+color = Color(1, 0.35, 0.4, 1)
+
+[node name="NotificationSection" type="PanelContainer" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="NotificationMargin" type="MarginContainer" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/NotificationSection"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="NotificationRow" type="HBoxContainer" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/NotificationSection/NotificationMargin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="NotificationLabel" type="Label" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/NotificationSection/NotificationMargin/NotificationRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.05, 0.1, 0.2, 0.95)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 28
+text = "Notification:"
+
+[node name="NotificationSwitch" type="Button" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/NotificationSection/NotificationMargin/NotificationRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(168, 64)
+layout_mode = 2
+focus_mode = 0
+flat = true
+
+[node name="NotificationStateLabel" type="Label" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/NotificationSection/NotificationMargin/NotificationRow/NotificationSwitch"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 0.0
+offset_right = -72.0
+offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.12, 0.28, 0.1, 1)
+theme_override_colors/font_outline_color = Color(0.05, 0.1, 0.15, 0.85)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 28
+text = "On"
+vertical_alignment = 1
+
+[node name="NotificationKnob" type="Panel" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/NotificationSection/NotificationMargin/NotificationRow/NotificationSwitch"]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 108.0
+offset_top = 8.0
+offset_right = 160.0
+offset_bottom = 56.0
+mouse_filter = 2
+
+[node name="SupportButton" type="Button" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 76)
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.05, 0.12, 0.2, 0.9)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 30
+text = "💬  Support"
+
+[node name="SaveButton" type="Button" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 76)
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.05, 0.12, 0.15, 0.9)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 30
+text = "💾  Save Progress"
+
+[node name="LegalRow" type="HBoxContainer" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content"]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 2
+
+[node name="TermsButton" type="Button" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/LegalRow"]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+size_flags_vertical = 8
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.05, 0.12, 0.15, 0.95)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 22
+text = "Terms of Service"
+
+[node name="PrivacyButton" type="Button" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/LegalRow"]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+size_flags_vertical = 8
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.05, 0.12, 0.15, 0.95)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 22
+text = "Privacy Policy"
+
+[node name="InfoPopup" parent="." instance=ExtResource("2_info")]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+visible = false

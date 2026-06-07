@@ -1,0 +1,14 @@
+# Godot 4+ specific ignores
+.godot/*
+!.godot/editor/
+.godot/editor/*
+!.godot/editor/editor_layout.cfg
+/android/
+
+# Release signing — never commit
+*.keystore
+build/signing.credentials.txt
+
+# Accidental editor saves — do not commit
+node_2d.tscn
+**/node_2d.tscn

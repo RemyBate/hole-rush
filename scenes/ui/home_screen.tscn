@@ -1,0 +1,391 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" uid="uid://dl1q11fxmj1c5" path="res://scripts/home_screen.gd" id="1_home"]
+[ext_resource type="Script" uid="uid://du1m0mnpu4qaw" path="res://scripts/home_background.gd" id="2_bg"]
+[ext_resource type="PackedScene" path="res://scenes/ui/level_prep_screen.tscn" id="3_prep"]
+[ext_resource type="Script" path="res://scripts/hole_rush_icon.gd" id="4_hole_icon"]
+[ext_resource type="Script" path="res://scripts/gold_coin_icon.gd" id="5_gold_coin"]
+
+[node name="HomeScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_home")
+
+[node name="HomeBackground" type="Node2D" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_bg")
+
+[node name="TopBar" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 12.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = 118.0
+grow_horizontal = 2
+
+[node name="TopMargin" type="MarginContainer" parent="TopBar"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="TopHBox" type="HBoxContainer" parent="TopBar/TopMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="AvatarButton" type="Button" parent="TopBar/TopMargin/TopHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(84, 84)
+layout_mode = 2
+focus_mode = 0
+flat = true
+text = ""
+
+[node name="HoleRushIcon" type="Control" parent="TopBar/TopMargin/TopHBox/AvatarButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("4_hole_icon")
+
+[node name="CoinsFrame" type="PanelContainer" parent="TopBar/TopMargin/TopHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.2
+
+[node name="CoinsMargin" type="MarginContainer" parent="TopBar/TopMargin/TopHBox/CoinsFrame"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 8
+
+[node name="CoinsHBox" type="HBoxContainer" parent="TopBar/TopMargin/TopHBox/CoinsFrame/CoinsMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="CoinIcon" type="Control" parent="TopBar/TopMargin/TopHBox/CoinsFrame/CoinsMargin/CoinsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+script = ExtResource("5_gold_coin")
+
+[node name="CoinsLabel" type="Label" parent="TopBar/TopMargin/TopHBox/CoinsFrame/CoinsMargin/CoinsHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 42
+text = "0"
+
+[node name="LivesFrame" type="PanelContainer" parent="TopBar/TopMargin/TopHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LivesMargin" type="MarginContainer" parent="TopBar/TopMargin/TopHBox/LivesFrame"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 8
+
+[node name="LivesHBox" type="HBoxContainer" parent="TopBar/TopMargin/TopHBox/LivesFrame/LivesMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="HeartIcon" type="Label" parent="TopBar/TopMargin/TopHBox/LivesFrame/LivesMargin/LivesHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+text = "❤️"
+
+[node name="LivesVBox" type="VBoxContainer" parent="TopBar/TopMargin/TopHBox/LivesFrame/LivesMargin/LivesHBox"]
+layout_mode = 2
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="LivesLabel" type="Label" parent="TopBar/TopMargin/TopHBox/LivesFrame/LivesMargin/LivesHBox/LivesVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "5"
+
+[node name="LivesStatus" type="Label" parent="TopBar/TopMargin/TopHBox/LivesFrame/LivesMargin/LivesHBox/LivesVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "FULL"
+
+[node name="SettingsButton" type="Button" parent="TopBar/TopMargin/TopHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(84, 84)
+layout_mode = 2
+focus_mode = 0
+text = "⚙"
+
+[node name="ProgressSection" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 20.0
+offset_top = 128.0
+offset_right = -20.0
+offset_bottom = 228.0
+grow_horizontal = 2
+
+[node name="ProgressMargin" type="MarginContainer" parent="ProgressSection"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
+
+[node name="ProgressVBox" type="VBoxContainer" parent="ProgressSection/ProgressMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TrackRow" type="HBoxContainer" parent="ProgressSection/ProgressMargin/ProgressVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="KeyReward" type="Label" parent="ProgressSection/ProgressMargin/ProgressVBox/TrackRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "🔑"
+
+[node name="BarHost" type="Control" parent="ProgressSection/ProgressMargin/ProgressVBox/TrackRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+custom_minimum_size = Vector2(0, 40)
+
+[node name="MetaBar" type="ProgressBar" parent="ProgressSection/ProgressMargin/ProgressVBox/TrackRow/BarHost"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+max_value = 100.0
+value = 35.0
+show_percentage = false
+
+[node name="HourReward" type="Label" parent="ProgressSection/ProgressMargin/ProgressVBox/TrackRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 34
+text = "⏳"
+
+[node name="InfoRow" type="HBoxContainer" parent="ProgressSection/ProgressMargin/ProgressVBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="MetaLabel" type="Label" parent="ProgressSection/ProgressMargin/ProgressVBox/InfoRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "235/800"
+horizontal_alignment = 1
+
+[node name="ProgressTimer" type="Label" parent="ProgressSection/ProgressMargin/ProgressVBox/InfoRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "6d 11h"
+
+[node name="LeftEvents" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 8.0
+offset_top = -200.0
+offset_right = 108.0
+offset_bottom = 200.0
+grow_vertical = 2
+theme_override_constants/separation = 18
+
+[node name="RightEvents" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -108.0
+offset_top = -200.0
+offset_right = -8.0
+offset_bottom = 200.0
+grow_vertical = 2
+theme_override_constants/separation = 18
+
+[node name="LevelArea" type="Control" parent="."]
+layout_mode = 1
+anchor_top = 0.68
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -128.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LevelFrame" type="PanelContainer" parent="LevelArea"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -235.0
+offset_top = -128.0
+offset_right = 235.0
+offset_bottom = -6.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="LevelMargin" type="MarginContainer" parent="LevelArea/LevelFrame"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 14
+
+[node name="LevelButton" type="Button" parent="LevelArea/LevelFrame/LevelMargin"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(440, 108)
+layout_mode = 2
+focus_mode = 0
+text = "LEVEL 1"
+
+[node name="BottomNav" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = -118.0
+offset_right = -8.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="NavMargin" type="MarginContainer" parent="BottomNav"]
+layout_mode = 2
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 10
+
+[node name="NavHBox" type="HBoxContainer" parent="BottomNav/NavMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="NavShopWrap" type="PanelContainer" parent="BottomNav/NavMargin/NavHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NavShop" type="Button" parent="BottomNav/NavMargin/NavHBox/NavShopWrap"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 0
+flat = true
+text = "🛒
+Shop"
+
+[node name="NavMapWrap" type="PanelContainer" parent="BottomNav/NavMargin/NavHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NavMap" type="Button" parent="BottomNav/NavMargin/NavHBox/NavMapWrap"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 0
+flat = true
+text = "🗺
+Map"
+
+[node name="NavHomeWrap" type="PanelContainer" parent="BottomNav/NavMargin/NavHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NavHome" type="Button" parent="BottomNav/NavMargin/NavHBox/NavHomeWrap"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 0
+flat = true
+text = "🏠
+Home"
+
+[node name="NavTrophyWrap" type="PanelContainer" parent="BottomNav/NavMargin/NavHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NavTrophies" type="Button" parent="BottomNav/NavMargin/NavHBox/NavTrophyWrap"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 0
+flat = true
+text = "🏆
+Trophy"
+
+[node name="NavCollectionWrap" type="PanelContainer" parent="BottomNav/NavMargin/NavHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NavCollection" type="Button" parent="BottomNav/NavMargin/NavHBox/NavCollectionWrap"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 0
+flat = true
+text = "🃏
+Collection"
+
+[node name="LevelPrep" parent="." instance=ExtResource("3_prep")]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2

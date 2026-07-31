@@ -14,16 +14,61 @@ enum Id {
 const COLLECTIBLE_COUNT: int = 5
 const MAX_LEVEL: int = 60
 
-## Mission targets (unchanged gameplay).
+## Legacy defaults (non-family callers). Prefer family_* helpers for missions.
 const MISSION_TARGETS: Array[int] = [12, 20, 10]
-## Mission collectible slots: A, B, D (small, small, large mission item).
 const MISSION_SLOTS: Array[int] = [0, 1, 3]
+
+## Fruit Garden family pack: slice / half / whole.
+const FRUIT_FAMILY_SLOTS: Array[int] = [0, 1, 2]
+## Level 1–3 targets: each active mission needs 10 of that type.
+const FRUIT_FAMILY_TARGETS: Array[int] = [10, 10, 10]
+
+## Generic family pack for other themes: small / medium / large mission items.
+const DEFAULT_FAMILY_SLOTS: Array[int] = [0, 1, 3]
+const DEFAULT_FAMILY_TARGETS: Array[int] = [10, 8, 6]
 
 
 static func theme_for_level(level: int) -> int:
 	var clamped := clampi(level, 1, MAX_LEVEL)
 	var index := (clamped - 1) / 10
 	return clampi(index, 0, Id.BEACH_PARTY)
+
+
+## 1–10 within the current theme decade.
+static func level_in_theme(level: int) -> int:
+	return ((clampi(level, 1, MAX_LEVEL) - 1) % 10) + 1
+
+
+## Progressive mission stage: L1→1 goal, L2→2 goals, L3+→3 goals (per theme decade).
+static func mission_stage_for_level(level: int) -> int:
+	var local := level_in_theme(level)
+	if local <= 1:
+		return 1
+	if local <= 2:
+		return 2
+	return 3
+
+
+## Small / medium / large slots for the active collectible family pack.
+static func family_slots(theme: int) -> Array[int]:
+	if theme == Id.FRUIT_GARDEN:
+		return FRUIT_FAMILY_SLOTS
+	return DEFAULT_FAMILY_SLOTS
+
+
+static func family_targets(theme: int) -> Array[int]:
+	if theme == Id.FRUIT_GARDEN:
+		return FRUIT_FAMILY_TARGETS
+	return DEFAULT_FAMILY_TARGETS
+
+
+## Back-compat wrappers used by older call sites.
+static func mission_slots(theme: int) -> Array[int]:
+	return family_slots(theme)
+
+
+static func mission_targets(theme: int) -> Array[int]:
+	return family_targets(theme)
 
 
 static func theme_display_name(theme: int) -> String:
@@ -61,7 +106,7 @@ static func collectible_icon(theme: int, slot: int) -> String:
 static func _collectible_names(theme: int) -> Array[String]:
 	match theme:
 		Id.FRUIT_GARDEN:
-			return ["Apples", "Tomatoes", "Watermelons", "Oranges", "Cherries"]
+			return ["Watermelon Slices", "Half Watermelons", "Whole Watermelons", "Oranges", "Cherries"]
 		Id.VEGETABLE_FARM:
 			return ["Cucumbers", "Carrots", "Lettuce", "Corn", "Pumpkins"]
 		Id.FAST_FOOD:
@@ -79,7 +124,8 @@ static func _collectible_names(theme: int) -> Array[String]:
 static func _collectible_icons(theme: int) -> Array[String]:
 	match theme:
 		Id.FRUIT_GARDEN:
-			return ["🍎", "🍅", "🍉", "🍊", "🍒"]
+			# Distinct per family size so mission cards are not identical.
+			return ["🔺", "◐", "🍉", "🍊", "🍒"]
 		Id.VEGETABLE_FARM:
 			return ["🥒", "🥕", "🥬", "🌽", "🎃"]
 		Id.FAST_FOOD:

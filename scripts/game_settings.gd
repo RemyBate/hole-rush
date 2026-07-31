@@ -47,6 +47,16 @@ func _ready() -> void:
 	_setup_audio()
 
 
+## Level shown on home Play / launched into a match.
+func get_play_level() -> int:
+	return highest_unlocked_level
+
+
+## Clamp a requested launch level to a valid campaign level.
+func resolve_play_level(requested_level: int) -> int:
+	return clampi(requested_level, 1, LevelTheme.MAX_LEVEL)
+
+
 func _setup_audio() -> void:
 	_music_player = AudioStreamPlayer.new()
 	_music_player.name = "MusicPlayer"
@@ -217,11 +227,13 @@ func meta_progress_ratio() -> float:
 func level_objective_lines(level: int) -> Array[String]:
 	var theme := LevelTheme.theme_for_level(level)
 	var lines: Array[String] = []
-	for i in 3:
-		var slot: int = LevelTheme.MISSION_SLOTS[i]
-		var name := LevelTheme.collectible_name(theme, slot)
-		var target: int = LevelTheme.MISSION_TARGETS[i]
-		lines.append("Collect %d %s" % [target, name])
+	var missions := MissionFactory.create_missions(theme, level)
+	for mission in missions:
+		var m := mission as Mission
+		if m == null:
+			continue
+		# Image-only missions: quantity only (prep UI can also show textures).
+		lines.append("Collect %d" % m.target)
 	return lines
 
 

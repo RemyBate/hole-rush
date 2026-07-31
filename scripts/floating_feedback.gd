@@ -47,7 +47,7 @@ func _draw() -> void:
 	var pos := Vector2(-text_size.x * 0.5, _float_offset - 8.0)
 
 	var bg := Rect2(pos - Vector2(6.0, 4.0), text_size + Vector2(12.0, 8.0))
-	draw_rect(bg, Color(0.05, 0.08, 0.14, 0.72 * alpha), true, 6.0)
+	draw_rect(bg, Color(0.05, 0.08, 0.14, 0.72 * alpha), true)
 
 	var c := _color
 	c.a = alpha

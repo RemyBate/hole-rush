@@ -1,9 +1,11 @@
 class_name LevelLayout
 extends RefCounted
 
-const ITEM_GAP: float = 16.0
+const ITEM_GAP: float = 28.0
 const OBSTACLE_CLEAR_RADIUS: float = 0.0
 const HUB_LANE: float = 58.0
+## Extra items beyond mission targets so levels stay completable.
+const SPAWN_MARGIN: int = 2
 
 ## Twelve open zones — fewer clusters, more travel space.
 const ZONES: Array[Vector2] = [
@@ -22,10 +24,266 @@ const ZONES: Array[Vector2] = [
 ]
 
 
-static func build_level(spawner: FoodSpawner, origin: Vector2, _theme: int) -> void:
+static func build_level(spawner: FoodSpawner, origin: Vector2, theme: int, level: int = 1) -> void:
+	if theme == LevelTheme.Id.FRUIT_GARDEN:
+		_build_fruit_garden_level(spawner, origin, level)
+		return
 	for i in ZONES.size():
 		_build_zone(spawner, origin + ZONES[i], i)
 	_build_connector_accent(spawner, origin)
+
+
+## Mixed numbered-image levels (Level 4+): varied formations for ~10 types.
+static func build_mixed_level(spawner: FoodSpawner, origin: Vector2, plan: LevelPlan) -> void:
+	if plan == null or plan.is_empty():
+		return
+
+	var target_map: Dictionary = {}
+	for t in plan.targets:
+		var key: String = str(t.get("catalog_key", ""))
+		target_map[key] = t
+
+	# Zone centers for formations (avoid HUD top strip / hole center).
+	var zones: Array[Vector2] = [
+		origin + Vector2(700.0, 620.0),
+		origin + Vector2(1600.0, 520.0),
+		origin + Vector2(2500.0, 620.0),
+		origin + Vector2(700.0, 1300.0),
+		origin + Vector2(2500.0, 1300.0),
+		origin + Vector2(700.0, 2000.0),
+		origin + Vector2(1600.0, 2100.0),
+		origin + Vector2(2500.0, 2000.0),
+		origin + Vector2(1100.0, 950.0),
+		origin + Vector2(2100.0, 950.0),
+	]
+
+	var entries: Array = plan.field_entries.duplicate()
+	# Largest first for placement stability.
+	entries.sort_custom(func(a, b): return (a as ItemEntry).visual_radius > (b as ItemEntry).visual_radius)
+
+	var pattern_names: Array[String] = []
+	for i in entries.size():
+		var entry: ItemEntry = entries[i]
+		var zone: Vector2 = zones[i % zones.size()]
+		var is_target := target_map.has(entry.catalog_key())
+		var count := _mixed_spawn_count(entry, target_map, is_target)
+		var pattern := (i + plan.level) % 10
+		_place_mixed_pattern(spawner, zone, entry, count, pattern, is_target, pattern_names)
+
+	# Near-hole mix: small for early swallow + medium/large so sizes are obvious at start.
+	var smalls: Array = []
+	var mediums: Array = []
+	var larges: Array = []
+	for e in plan.field_entries:
+		var entry: ItemEntry = e
+		match entry.size_class:
+			ItemEntry.SizeClass.EXTRA_SMALL, ItemEntry.SizeClass.SMALL:
+				smalls.append(entry)
+			ItemEntry.SizeClass.MEDIUM:
+				mediums.append(entry)
+			_:
+				larges.append(entry)
+	if smalls.is_empty():
+		var sorted_small: Array = plan.field_entries.duplicate()
+		sorted_small.sort_custom(
+			func(a, b): return (a as ItemEntry).visual_radius < (b as ItemEntry).visual_radius
+		)
+		smalls.append(sorted_small[0])
+	var hole_c := origin + Vector2(1600.0, 1600.0)
+	var near_small: Array[Vector2] = [
+		hole_c + Vector2(230.0, -40.0),
+		hole_c + Vector2(-220.0, 90.0),
+		hole_c + Vector2(70.0, 240.0),
+		hole_c + Vector2(-80.0, -230.0),
+		hole_c + Vector2(250.0, 180.0),
+		hole_c + Vector2(-240.0, -140.0),
+	]
+	for i in near_small.size():
+		spawner.spawn_catalog_item(near_small[i], smalls[i % smalls.size()], false)
+	var near_medium: Array[Vector2] = [
+		hole_c + Vector2(340.0, -160.0),
+		hole_c + Vector2(-330.0, 200.0),
+		hole_c + Vector2(180.0, 340.0),
+		hole_c + Vector2(-200.0, -340.0),
+	]
+	if not mediums.is_empty():
+		for i in near_medium.size():
+			spawner.spawn_catalog_item(near_medium[i], mediums[i % mediums.size()], false)
+	var near_large: Array[Vector2] = [
+		hole_c + Vector2(420.0, 80.0),
+		hole_c + Vector2(-400.0, -60.0),
+	]
+	if not larges.is_empty():
+		for i in near_large.size():
+			spawner.spawn_catalog_item(near_large[i], larges[i % larges.size()], false)
+
+	# Guarantee target quantities after pattern placement rejections.
+	_ensure_mixed_target_counts(spawner, origin, plan, target_map)
+
+	print("[LevelLayout] mixed L", plan.level, " patterns=", pattern_names, " ", plan.summary())
+
+
+static func _ensure_mixed_target_counts(
+	spawner: FoodSpawner,
+	origin: Vector2,
+	plan: LevelPlan,
+	_target_map: Dictionary
+) -> void:
+	var zones: Array[Vector2] = [
+		origin + Vector2(900.0, 1100.0),
+		origin + Vector2(2300.0, 1100.0),
+		origin + Vector2(1600.0, 2300.0),
+	]
+	var zi := 0
+	for t in plan.targets:
+		var entry: ItemEntry = t.get("entry")
+		if entry == null:
+			continue
+		var need := int(t.get("target", 10)) + int(t.get("margin", 2))
+		var have := spawner.count_catalog_key(entry.catalog_key())
+		var deficit := need - have
+		if deficit > 0:
+			spawner.spawn_catalog_scatter(
+				zones[zi % zones.size()], deficit, 140.0, entry, 900 + zi, true
+			)
+		zi += 1
+
+
+static func _mixed_spawn_count(entry: ItemEntry, target_map: Dictionary, is_target: bool) -> int:
+	if is_target:
+		var t: Dictionary = target_map[entry.catalog_key()]
+		return int(t.get("target", 10)) + int(t.get("margin", 2))
+	match entry.size_class:
+		ItemEntry.SizeClass.EXTRA_SMALL, ItemEntry.SizeClass.SMALL:
+			return 8
+		ItemEntry.SizeClass.MEDIUM:
+			return 6
+		ItemEntry.SizeClass.LARGE:
+			return 4
+		_:
+			return 3
+
+
+static func _place_mixed_pattern(
+	spawner: FoodSpawner,
+	center: Vector2,
+	entry: ItemEntry,
+	count: int,
+	pattern: int,
+	mission_highlight: bool,
+	pattern_names: Array[String]
+) -> void:
+	if count <= 0:
+		return
+	var spacing := entry.visual_radius * 2.55 + ITEM_GAP
+	match pattern:
+		0: # singles + scatter
+			pattern_names.append("scatter")
+			spawner.spawn_catalog_scatter(center, count, 120.0, entry, entry.image_id, mission_highlight)
+		1: # pairs
+			pattern_names.append("pairs")
+			var pairs := ceili(float(count) / 2.0)
+			for i in pairs:
+				var angle := float(i) / float(maxi(pairs, 1)) * TAU
+				var base := center + Vector2(cos(angle), sin(angle)) * (90.0 + entry.visual_radius)
+				spawner.spawn_catalog_item(base, entry, mission_highlight)
+				if i * 2 + 1 < count:
+					spawner.spawn_catalog_item(base + Vector2(spacing * 0.9, 0.0), entry, mission_highlight)
+		2: # group 3–6
+			pattern_names.append("group")
+			var group_n := mini(count, clampi(3 + (entry.image_id % 4), 3, 6))
+			spawner.spawn_catalog_circle(center, group_n, spacing * 1.05, entry, mission_highlight)
+			if count > group_n:
+				spawner.spawn_catalog_scatter(center + Vector2(130.0, 50.0), count - group_n, 90.0, entry, 20, mission_highlight)
+		3: # circle
+			pattern_names.append("circle")
+			spawner.spawn_catalog_circle(center, count, maxf(spacing * float(count) / TAU, spacing * 1.35), entry, mission_highlight)
+		4: # square
+			pattern_names.append("square")
+			var side := maxi(2, int(ceil(sqrt(float(count)))))
+			spawner.spawn_catalog_grid(center, side, side, spacing, entry, mission_highlight)
+		5: # rectangle
+			pattern_names.append("rectangle")
+			var cols := maxi(3, int(ceil(sqrt(float(count) * 1.5))))
+			var rows := maxi(2, int(ceil(float(count) / float(cols))))
+			spawner.spawn_catalog_grid(center, cols, rows, spacing, entry, mission_highlight)
+		6: # straight row
+			pattern_names.append("row")
+			spawner.spawn_catalog_rows(center, count, spacing, entry, mission_highlight)
+		7: # curved arc
+			pattern_names.append("arc")
+			spawner.spawn_catalog_arc(center, count, spacing * 2.5, -1.1, 1.1, entry, mission_highlight)
+		8: # clustered zone
+			pattern_names.append("zone")
+			spawner.spawn_catalog_scatter(center, count, 70.0, entry, 40, mission_highlight)
+		_:
+			pattern_names.append("loose")
+			spawner.spawn_catalog_scatter(center, count, 150.0, entry, 60, mission_highlight)
+
+
+static func _build_fruit_garden_level(spawner: FoodSpawner, origin: Vector2, level: int) -> void:
+	var slice := CollectibleArt.FRUIT_SLOT_WATERMELON_SLICE
+	var half := CollectibleArt.FRUIT_SLOT_WATERMELON_HALF
+	var whole := CollectibleArt.FRUIT_SLOT_WATERMELON_WHOLE
+	var stage := LevelTheme.mission_stage_for_level(level)
+	var targets := LevelTheme.family_targets(LevelTheme.Id.FRUIT_GARDEN)
+	var c := origin + Vector2(1600.0, 1600.0)
+
+	var slice_count := int(targets[0]) + SPAWN_MARGIN
+	var half_count := 0
+	var whole_count := 0
+	if stage >= 2:
+		half_count = int(targets[1]) + SPAWN_MARGIN
+	if stage >= 3:
+		whole_count = int(targets[2]) + SPAWN_MARGIN
+
+	# Place largest first so spacing rejects do not drop mission-critical items.
+	_spawn_ring(spawner, c, whole_count, 520.0, -0.55, whole, true)
+	_spawn_ring(spawner, c, half_count, 400.0, 0.15, half, true)
+	_spawn_ring(spawner, c, slice_count, 250.0, 0.85, slice, true)
+
+	# Near-hole slices for early growth / easy starts (Level 1 focus).
+	var near_slices: Array[Vector2] = [
+		c + Vector2(190.0, -20.0),
+		c + Vector2(-180.0, 90.0),
+		c + Vector2(50.0, 195.0),
+	]
+	for p in near_slices:
+		spawner.spawn_item(p, slice, true)
+
+	# Small oranges / cherries so the hole can grow before wholes on Level 3.
+	var growth_zones: Array[Vector2] = [
+		Vector2(950.0, 950.0),
+		Vector2(2250.0, 950.0),
+		Vector2(950.0, 2250.0),
+		Vector2(2250.0, 2250.0),
+		Vector2(1600.0, 800.0),
+		Vector2(1600.0, 2400.0),
+	]
+	for i in growth_zones.size():
+		var z := origin + growth_zones[i]
+		spawner.spawn_scatter(z, 5, 55.0, 3, 100 + i)
+		spawner.spawn_scatter(z + Vector2(40.0, -30.0), 4, 48.0, 4, 200 + i)
+
+
+static func _spawn_ring(
+	spawner: FoodSpawner,
+	center: Vector2,
+	count: int,
+	radius: float,
+	angle_offset: float,
+	slot: int,
+	mission_highlight: bool
+) -> void:
+	if count <= 0:
+		return
+	for i in count:
+		var angle := angle_offset + (TAU * float(i) / float(count))
+		var pos := center + Vector2(cos(angle), sin(angle)) * radius
+		if not spawner.spawn_item(pos, slot, mission_highlight):
+			# Retry slightly farther out if the first spot was blocked.
+			var retry := center + Vector2(cos(angle), sin(angle)) * (radius + 70.0)
+			spawner.spawn_item(retry, slot, mission_highlight)
 
 
 static func _build_zone(spawner: FoodSpawner, center: Vector2, variant: int) -> void:

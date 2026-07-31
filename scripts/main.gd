@@ -57,10 +57,11 @@ func _show_home_with_reward(reward_payload: Dictionary) -> void:
 func _on_play_level(level: int, boosters: Array) -> void:
 	if not GameSettings.can_play():
 		return
-	_transition_to_game(level, boosters)
+	_transition_to_game(GameSettings.resolve_play_level(level), boosters)
 
 
 func _transition_to_game(level: int, boosters: Array) -> void:
+	level = GameSettings.resolve_play_level(level)
 	_fade_out(0.26)
 	await get_tree().create_timer(0.28).timeout
 	_home.hide()

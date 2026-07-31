@@ -44,7 +44,7 @@ func _ready() -> void:
 
 
 func begin_level(level: int, boosters: Array) -> void:
-	_current_level = clampi(level, 1, LevelTheme.MAX_LEVEL)
+	_current_level = GameSettings.resolve_play_level(level)
 	_active_boosters = boosters.duplicate()
 	_time_left = GameConstants.GAME_TIME_SECONDS
 	_double_coins = false
@@ -91,7 +91,10 @@ func _start_match() -> void:
 	_run_trophies = 0
 	_pending_victory = {}
 	var theme := LevelTheme.theme_for_level(_current_level)
-	_missions = MissionFactory.create_missions(theme)
+	var plan := LevelPlan.for_level(_current_level, MissionFactory.category_for_theme(theme))
+	if plan.is_empty():
+		plan = null
+	_missions = MissionFactory.create_missions(theme, _current_level, plan)
 
 	hud.hide_result_screens()
 	hud.update_timer(_time_left)
@@ -99,10 +102,15 @@ func _start_match() -> void:
 	hud.update_level_coins(_run_coins)
 	hud.update_missions(_missions)
 
-	_setup_play_area(theme)
+	# Fruit catalog levels always use the light-green Fruit Garden field
+	# (avoids Fast Food grey checkerboard when save progress is in later themes).
+	var bg_theme := theme
+	if plan != null and plan.category == ItemCatalog.CATEGORY_FRUITS:
+		bg_theme = LevelTheme.Id.FRUIT_GARDEN
+	_setup_play_area(bg_theme)
 	food_spawner.clear_food()
 	currency_spawner.clear_pickups()
-	food_spawner.spawn_level(_play_bounds, theme, _current_level)
+	food_spawner.spawn_level(_play_bounds, theme, _current_level, plan)
 	currency_spawner.spawn_level(_play_bounds, _current_level, food_spawner)
 
 	var center := _play_bounds.position + _play_bounds.size * 0.5
@@ -148,10 +156,10 @@ func _on_food_collected(food: Food) -> void:
 	_collected += 1
 	_score += food.score_value
 	hud.update_score(_score)
-	_apply_mission_progress(food.item_type)
+	_apply_mission_progress(food)
 
 	if _collected % GameConstants.GROWTH_EVERY == 0:
-		hole.grow(GameConstants.GROWTH_RADIUS)
+		hole.grow(food.get_growth_contribution())
 
 	if _all_missions_complete():
 		_win_match()
@@ -183,10 +191,19 @@ func _on_currency_collected(pickup: CurrencyPickup) -> void:
 			_run_trophies += amount
 
 
-func _apply_mission_progress(item_type: int) -> void:
+## Accepts a Food (Level 4+ catalog / live collect) or a legacy int slot id (tools / L1–3).
+func _apply_mission_progress(food_or_type: Variant) -> void:
 	for mission in _missions:
-		if mission.item_type == item_type:
-			mission.add_progress()
+		var m := mission as Mission
+		if m == null:
+			continue
+		if food_or_type is Food:
+			if m.matches_food(food_or_type as Food):
+				m.add_progress()
+		elif typeof(food_or_type) == TYPE_INT or typeof(food_or_type) == TYPE_FLOAT:
+			# Legacy slot match only — never apply raw ints to catalog missions.
+			if m.catalog_key == "" and int(m.item_type) == int(food_or_type):
+				m.add_progress()
 	hud.update_missions(_missions)
 
 
@@ -257,10 +274,12 @@ func _on_victory_continue_pressed() -> void:
 	var fly_from := Vector2.ZERO
 	if earned > 0 and hud.has_method("get_victory_coin_fly_global_pos"):
 		fly_from = hud.get_victory_coin_fly_global_pos()
-	var next_level := mini(
+
+	var next_level: int = mini(
 		int(_pending_victory.get("completed_level", _current_level)) + 1,
 		LevelTheme.MAX_LEVEL
 	)
+
 	GameSettings.apply_victory_continue(
 		next_level,
 		earned,

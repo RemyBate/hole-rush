@@ -32,13 +32,18 @@ func _draw() -> void:
 
 
 func _draw_size_indicator(hole_size: int, r: float) -> void:
+	# Guard against NaN/negative radius so draw calls stay valid while the hole grows.
+	if not is_finite(r) or r < 1.0:
+		return
+	var size := clampi(hole_size, 0, GameConstants.MAX_HOLE_SIZE)
 	var label_pos := Vector2(0.0, -r - 14.0)
 	var bg_w := 12.0 + float(GameConstants.MAX_HOLE_SIZE) * 8.0
 	var bg := Rect2(label_pos + Vector2(-bg_w * 0.5, -10.0), Vector2(bg_w, 20.0))
-	draw_rect(bg, Color(0.12, 0.22, 0.38, 0.75), true, 8.0)
+	# Filled draw_rect must omit width — Godot warns every frame if width is passed while filled=true.
+	draw_rect(bg, Color(0.12, 0.22, 0.38, 0.75), true)
 	var dot_count := GameConstants.MAX_HOLE_SIZE
 	var span := float(dot_count - 1) * 8.0
 	for i in dot_count:
-		var filled := i < hole_size
+		var filled := i < size
 		var c := Color(0.4, 0.85, 1.0, 0.95) if filled else Color(1.0, 1.0, 1.0, 0.25)
 		draw_circle(label_pos + Vector2(-span * 0.5 + i * 8.0, 0.0), 3.0, c)

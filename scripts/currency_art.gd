@@ -78,15 +78,15 @@ static func draw_key(canvas: CanvasItem, scale: float = 1.0) -> void:
 	DrawUtils.draw_soft_shadow(canvas, Vector2(0, 4), Vector2(20.0, 8.5), 0.22)
 	canvas.draw_circle(Vector2(-5, -4), 7.0, Color(1.0, 0.82, 0.2, 1.0))
 	canvas.draw_circle(Vector2(-5, -4), 4.0, Color(0.95, 0.35, 0.4, 1.0))
-	canvas.draw_rect(Rect2(-2, -2, 16, 5), Color(1.0, 0.88, 0.25, 1.0), true, 2.0)
-	canvas.draw_rect(Rect2(12, -1, 4, 3), Color(1.0, 0.88, 0.25, 1.0), true, 1.0)
-	canvas.draw_rect(Rect2(12, 4, 4, 3), Color(1.0, 0.88, 0.25, 1.0), true, 1.0)
+	canvas.draw_rect(Rect2(-2, -2, 16, 5), Color(1.0, 0.88, 0.25, 1.0), true)
+	canvas.draw_rect(Rect2(12, -1, 4, 3), Color(1.0, 0.88, 0.25, 1.0), true)
+	canvas.draw_rect(Rect2(12, 4, 4, 3), Color(1.0, 0.88, 0.25, 1.0), true)
 
 
 static func draw_trophy(canvas: CanvasItem, scale: float = 1.0) -> void:
 	DrawUtils.draw_soft_shadow(canvas, Vector2(0, 5), Vector2(22.0, 9.0), 0.22)
-	canvas.draw_rect(Rect2(-10, 6, 20, 5), Color(0.85, 0.55, 0.12, 1.0), true, 2.0)
-	canvas.draw_rect(Rect2(-6, 10, 12, 3), Color(0.72, 0.42, 0.08, 1.0), true, 1.0)
+	canvas.draw_rect(Rect2(-10, 6, 20, 5), Color(0.85, 0.55, 0.12, 1.0), true)
+	canvas.draw_rect(Rect2(-6, 10, 12, 3), Color(0.72, 0.42, 0.08, 1.0), true)
 	var cup := PackedVector2Array([
 		Vector2(-12, 6), Vector2(-10, -8), Vector2(0, -12), Vector2(10, -8), Vector2(12, 6),
 	])

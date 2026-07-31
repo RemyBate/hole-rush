@@ -45,12 +45,14 @@ static func _draw_edge_trees(canvas: CanvasItem, bounds: Rect2, count: int = 14)
 				pos = Vector2(bounds.position.x + t * bounds.size.x, bounds.position.y + bounds.size.y - 36.0)
 			_:
 				pos = Vector2(bounds.position.x + 36.0, bounds.position.y + t * bounds.size.y)
-		canvas.draw_rect(Rect2(pos + Vector2(-5.0, 0.0), Vector2(10.0, 26.0)), Color(0.45, 0.32, 0.22, 0.55), true, 3.0)
+		canvas.draw_rect(Rect2(pos + Vector2(-5.0, 0.0), Vector2(10.0, 26.0)), Color(0.45, 0.32, 0.22, 0.55), true)
 		canvas.draw_circle(pos + Vector2(0.0, -12.0), 20.0, Color(0.28, 0.58, 0.32, 0.6))
 
 
 static func _draw_fruit_garden(canvas: CanvasItem, bounds: Rect2) -> void:
-	_draw_soft_field(canvas, bounds, Color(0.42, 0.7, 0.38), Color(0.48, 0.76, 0.42))
+	# Soft light-green field — primary playground for numbered fruit collectibles.
+	# Keep colour contrast low so the soft grid never reads as a checkerboard.
+	_draw_soft_field(canvas, bounds, Color(0.50, 0.82, 0.47), Color(0.55, 0.86, 0.52))
 	_draw_edge_trees(canvas, bounds)
 	_draw_fruit_crates(canvas, bounds)
 
@@ -63,7 +65,7 @@ static func _draw_vegetable_farm(canvas: CanvasItem, bounds: Rect2) -> void:
 	while y < bounds.position.y + bounds.size.y - 120.0:
 		canvas.draw_rect(
 			Rect2(bounds.position.x + 120.0, y, bounds.size.x - 240.0, 28.0),
-			Color(0.42, 0.52, 0.32, 0.45), true, 6.0
+			Color(0.42, 0.52, 0.32, 0.45), true
 		)
 		y += row_spacing
 	# Wooden fences on edges
@@ -71,26 +73,23 @@ static func _draw_vegetable_farm(canvas: CanvasItem, bounds: Rect2) -> void:
 		var t := float(i) / 19.0
 		var top := bounds.position + Vector2(t * bounds.size.x, 24.0)
 		var bot := bounds.position + Vector2(t * bounds.size.x, bounds.size.y - 24.0)
-		canvas.draw_rect(Rect2(top, Vector2(8.0, 22.0)), Color(0.55, 0.38, 0.22, 0.5), true, 2.0)
-		canvas.draw_rect(Rect2(bot, Vector2(8.0, 22.0)), Color(0.55, 0.38, 0.22, 0.5), true, 2.0)
+		canvas.draw_rect(Rect2(top, Vector2(8.0, 22.0)), Color(0.55, 0.38, 0.22, 0.5), true)
+		canvas.draw_rect(Rect2(bot, Vector2(8.0, 22.0)), Color(0.55, 0.38, 0.22, 0.5), true)
 
 
 static func _draw_fast_food_floor(canvas: CanvasItem, bounds: Rect2) -> void:
-	var tile := 80.0
-	var light := Color(0.88, 0.9, 0.92)
-	var dark := Color(0.82, 0.84, 0.88)
-	var col := 0
-	var y := bounds.position.y
-	while y < bounds.position.y + bounds.size.y:
-		var row := 0
-		var x := bounds.position.x
-		while x < bounds.position.x + bounds.size.x:
-			var c := light if (row + col) % 2 == 0 else dark
-			canvas.draw_rect(Rect2(x, y, tile, tile), c, true)
-			x += tile
-			row += 1
-		y += tile
-		col += 1
+	# Soft warm floor — no grey/white checkerboard (that read as a debug grid).
+	_draw_soft_field(canvas, bounds, Color(0.94, 0.90, 0.82), Color(0.90, 0.86, 0.78))
+	# Subtle aisle lines only.
+	var step := 160.0
+	var x := bounds.position.x + 80.0
+	while x < bounds.position.x + bounds.size.x - 80.0:
+		canvas.draw_line(
+			Vector2(x, bounds.position.y + 40.0),
+			Vector2(x, bounds.position.y + bounds.size.y - 40.0),
+			Color(0.82, 0.78, 0.70, 0.25), 3.0
+		)
+		x += step
 
 
 static func _draw_bakery_floor(canvas: CanvasItem, bounds: Rect2) -> void:
@@ -147,8 +146,8 @@ static func _draw_fruit_crates(canvas: CanvasItem, bounds: Rect2) -> void:
 			rng.randf_range(bounds.position.x + 200.0, bounds.position.x + bounds.size.x - 200.0),
 			rng.randf_range(bounds.position.y + 200.0, bounds.position.y + bounds.size.y - 200.0)
 		)
-		canvas.draw_rect(Rect2(pos - Vector2(14.0, 10.0), Vector2(28.0, 20.0)), Color(0.62, 0.44, 0.28, 0.35), true, 4.0)
-		canvas.draw_rect(Rect2(pos - Vector2(12.0, -8.0), Vector2(24.0, 6.0)), Color(0.72, 0.52, 0.35, 0.3), true, 3.0)
+		canvas.draw_rect(Rect2(pos - Vector2(14.0, 10.0), Vector2(28.0, 20.0)), Color(0.62, 0.44, 0.28, 0.35), true)
+		canvas.draw_rect(Rect2(pos - Vector2(12.0, -8.0), Vector2(24.0, 6.0)), Color(0.72, 0.52, 0.35, 0.3), true)
 
 
 static func _draw_border(canvas: CanvasItem, bounds: Rect2, theme: int) -> void:

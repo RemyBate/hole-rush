@@ -31,7 +31,9 @@ static func draw_rounded_panel(
 	fill: Color,
 	border: Color = Color(1.0, 1.0, 1.0, 0.35),
 	border_width: float = 3.0,
-	corner: float = 14.0
+	_corner: float = 14.0
 ) -> void:
-	canvas.draw_rect(rect, fill, true, corner)
-	canvas.draw_rect(rect, border, false, corner, border_width)
+	# Godot draw_rect has no corner-radius arg; filled rects must omit width.
+	canvas.draw_rect(rect, fill, true)
+	if border_width > 0.0 and border.a > 0.0:
+		canvas.draw_rect(rect, border, false, border_width)

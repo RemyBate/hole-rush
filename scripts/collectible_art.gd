@@ -1,6 +1,58 @@
 class_name CollectibleArt
 extends RefCounted
 
+## Fruit Garden texture-backed watermelon slots (physical field collectibles).
+const FRUIT_SLOT_WATERMELON_SLICE: int = 0
+const FRUIT_SLOT_WATERMELON_HALF: int = 1
+const FRUIT_SLOT_WATERMELON_WHOLE: int = 2
+
+const TEX_WATERMELON_WHOLE: Texture2D = preload("res://assets/items/fruits/1.png")
+const TEX_WATERMELON_HALF: Texture2D = preload("res://assets/items/fruits/2.png")
+const TEX_WATERMELON_SLICE: Texture2D = preload("res://assets/items/fruits/3.png")
+
+## Content fill of each PNG (opaque fruit vs full frame) — keeps drawn size honest.
+const _WATERMELON_CONTENT_FILL: Array[float] = [0.74, 0.90, 0.87]
+
+
+static func is_textured_watermelon(theme: int, slot: int) -> bool:
+	return theme == LevelTheme.Id.FRUIT_GARDEN and slot >= 0 and slot <= FRUIT_SLOT_WATERMELON_WHOLE
+
+
+static func watermelon_required_hole_size(slot: int) -> int:
+	match slot:
+		FRUIT_SLOT_WATERMELON_SLICE:
+			return 1
+		FRUIT_SLOT_WATERMELON_HALF:
+			return 2
+		FRUIT_SLOT_WATERMELON_WHOLE:
+			return 3
+		_:
+			return 1
+
+
+static func watermelon_score_value(slot: int) -> int:
+	match slot:
+		FRUIT_SLOT_WATERMELON_SLICE:
+			return 2
+		FRUIT_SLOT_WATERMELON_HALF:
+			return 5
+		FRUIT_SLOT_WATERMELON_WHOLE:
+			return 10
+		_:
+			return 2
+
+
+static func watermelon_size_tier(slot: int) -> int:
+	match slot:
+		FRUIT_SLOT_WATERMELON_SLICE:
+			return ItemSizeTier.Tier.SMALL
+		FRUIT_SLOT_WATERMELON_HALF:
+			return ItemSizeTier.Tier.MEDIUM
+		FRUIT_SLOT_WATERMELON_WHOLE:
+			return ItemSizeTier.Tier.LARGE
+		_:
+			return ItemSizeTier.Tier.SMALL
+
 
 static func draw_item(canvas: CanvasItem, theme: int, slot: int, tier_scale: float = 1.0) -> void:
 	var scale := tier_scale
@@ -21,7 +73,46 @@ static func draw_item(canvas: CanvasItem, theme: int, slot: int, tier_scale: flo
 			_draw_fruit(canvas, 0, scale)
 
 
+## Draw a numbered catalog PNG at full colour — exact source texture, aspect preserved.
+static func draw_catalog_entry(canvas: CanvasItem, entry: ItemEntry, tier_scale: float = 1.0) -> void:
+	if entry == null:
+		return
+	draw_catalog_texture(canvas, entry.texture, entry.visual_radius * tier_scale)
+
+
+static func draw_catalog_texture(canvas: CanvasItem, texture: Texture2D, visual_radius: float) -> void:
+	if texture == null or visual_radius <= 0.0:
+		return
+	var target_diam: float = visual_radius * 2.0
+	var tex_size: Vector2 = texture.get_size()
+	if tex_size.x <= 0.0 or tex_size.y <= 0.0:
+		return
+	var uniform: float = target_diam / maxf(tex_size.x, tex_size.y)
+	var draw_w: float = tex_size.x * uniform
+	var draw_h: float = tex_size.y * uniform
+	canvas.draw_texture_rect(
+		texture,
+		Rect2(-draw_w * 0.5, -draw_h * 0.5, draw_w, draw_h),
+		false,
+		Color.WHITE
+	)
+
+
 static func visual_radius(theme: int, slot: int) -> float:
+	if theme == LevelTheme.Id.FRUIT_GARDEN:
+		match slot:
+			FRUIT_SLOT_WATERMELON_SLICE:
+				return 26.0 # start hole (38) can swallow immediately
+			FRUIT_SLOT_WATERMELON_HALF:
+				return 46.0 # needs a little growth
+			FRUIT_SLOT_WATERMELON_WHOLE:
+				return 58.0 # needs more growth; matches visible size
+			3:
+				return 16.0
+			4:
+				return 17.0
+			_:
+				return 18.0
 	match slot:
 		0:
 			return 16.0
@@ -42,7 +133,7 @@ static func item_color(theme: int, slot: int) -> Color:
 	match theme:
 		LevelTheme.Id.FRUIT_GARDEN:
 			colors = [
-				Color(0.92, 0.32, 0.3), Color(0.94, 0.28, 0.32), Color(0.42, 0.82, 0.42),
+				Color(0.92, 0.28, 0.35), Color(0.88, 0.22, 0.28), Color(0.28, 0.72, 0.38),
 				Color(0.98, 0.62, 0.2), Color(0.92, 0.22, 0.35),
 			]
 		LevelTheme.Id.VEGETABLE_FARM:
@@ -79,17 +170,8 @@ static func item_color(theme: int, slot: int) -> Color:
 
 static func _draw_fruit(canvas: CanvasItem, slot: int, s: float) -> void:
 	match slot:
-		0:
-			canvas.draw_circle(Vector2(0.0, 2.0 * s), 14.0 * s, Color(0.92, 0.28, 0.28))
-			canvas.draw_circle(Vector2(-5.0 * s, -2.0 * s), 8.0 * s, Color(1.0, 0.45, 0.42))
-			canvas.draw_circle(Vector2(0.0, -15.0 * s), 4.0 * s, Color(0.42, 0.62, 0.28))
-		1:
-			canvas.draw_circle(Vector2(0.0, 3.0 * s), 15.0 * s, Color(0.92, 0.3, 0.32))
-			var leaf := PackedVector2Array([Vector2(0.0, -14.0) * s, Vector2(10.0, -22.0) * s, Vector2(4.0, -12.0) * s])
-			canvas.draw_colored_polygon(leaf, Color(0.38, 0.72, 0.38))
-		2:
-			canvas.draw_circle(Vector2.ZERO, 20.0 * s, Color(0.38, 0.78, 0.42))
-			canvas.draw_arc(Vector2.ZERO, 20.0 * s, -0.4, 0.4, 12, Color(0.28, 0.58, 0.32), 5.0 * s)
+		FRUIT_SLOT_WATERMELON_SLICE, FRUIT_SLOT_WATERMELON_HALF, FRUIT_SLOT_WATERMELON_WHOLE:
+			_draw_watermelon_texture(canvas, slot, s)
 		3:
 			canvas.draw_circle(Vector2.ZERO, 15.0 * s, Color(0.98, 0.62, 0.18))
 			for i in 8:
@@ -101,6 +183,36 @@ static func _draw_fruit(canvas: CanvasItem, slot: int, s: float) -> void:
 				canvas.draw_circle(off + Vector2(0.0, 2.0 * s), 7.0 * s, Color(0.92, 0.2, 0.35))
 		_:
 			pass
+
+
+static func _watermelon_texture(slot: int) -> Texture2D:
+	match slot:
+		FRUIT_SLOT_WATERMELON_SLICE:
+			return TEX_WATERMELON_SLICE
+		FRUIT_SLOT_WATERMELON_HALF:
+			return TEX_WATERMELON_HALF
+		_:
+			return TEX_WATERMELON_WHOLE
+
+
+static func _draw_watermelon_texture(canvas: CanvasItem, slot: int, s: float) -> void:
+	var tex := _watermelon_texture(slot)
+	if tex == null:
+		return
+	var target_diam: float = visual_radius(LevelTheme.Id.FRUIT_GARDEN, slot) * 2.0 * s
+	var tex_size := tex.get_size()
+	var fill: float = _WATERMELON_CONTENT_FILL[clampi(slot, 0, _WATERMELON_CONTENT_FILL.size() - 1)]
+	var frame_max: float = maxf(tex_size.x, tex_size.y) * fill
+	if frame_max <= 0.0:
+		return
+	var uniform: float = target_diam / frame_max
+	var draw_w: float = tex_size.x * uniform
+	var draw_h: float = tex_size.y * uniform
+	canvas.draw_texture_rect(
+		tex,
+		Rect2(-draw_w * 0.5, -draw_h * 0.5, draw_w, draw_h),
+		false
+	)
 
 
 # --- Vegetable Farm ---

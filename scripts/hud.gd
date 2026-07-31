@@ -35,6 +35,7 @@ var _max_time: float = GameConstants.GAME_TIME_SECONDS
 var _is_paused: bool = false
 var _mission_cards: Array[PanelContainer] = []
 var _mission_icons: Array[Label] = []
+var _mission_icon_textures: Array[TextureRect] = []
 var _mission_titles: Array[Label] = []
 var _mission_progress: Array[Label] = []
 
@@ -53,9 +54,26 @@ func _ready() -> void:
 func _cache_mission_widgets() -> void:
 	_mission_cards = [mission_card_1, mission_card_2, mission_card_3]
 	for card in _mission_cards:
-		_mission_icons.append(card.get_node("Margin/VBox/Icon") as Label)
-		_mission_titles.append(card.get_node("Margin/VBox/Title") as Label)
-		_mission_progress.append(card.get_node("Margin/VBox/Progress") as Label)
+		var vbox := card.get_node("Margin/VBox") as VBoxContainer
+		var icon_label := vbox.get_node("Icon") as Label
+		_mission_icons.append(icon_label)
+		var tex := vbox.get_node_or_null("IconTexture") as TextureRect
+		if tex == null:
+			tex = TextureRect.new()
+			tex.name = "IconTexture"
+			tex.custom_minimum_size = Vector2(84, 84)
+			tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			tex.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+			tex.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+			tex.modulate = Color.WHITE
+			tex.self_modulate = Color.WHITE
+			tex.hide()
+			vbox.add_child(tex)
+			vbox.move_child(tex, 0)
+		_mission_icon_textures.append(tex)
+		_mission_titles.append(vbox.get_node("Title") as Label)
+		_mission_progress.append(vbox.get_node("Progress") as Label)
 
 
 func _setup_result_screens() -> void:
@@ -113,21 +131,42 @@ func update_timer(seconds_left: float) -> void:
 
 
 func update_missions(missions: Array) -> void:
-	for i in mini(missions.size(), _mission_cards.size()):
+	for i in _mission_cards.size():
+		if i >= missions.size():
+			_mission_cards[i].visible = false
+			continue
 		var mission := missions[i] as Mission
 		if mission == null:
+			_mission_cards[i].visible = false
 			continue
-		var card := _mission_cards[i]
-		_mission_icons[i].text = mission.icon
-		_mission_titles[i].text = mission.display_name
-		_mission_progress[i].text = "%d / %d" % [mission.progress, mission.target]
+		_mission_cards[i].visible = true
+		# Always prefer exact PNG + counter; never show collectible names.
+		_mission_titles[i].hide()
+		_mission_titles[i].text = ""
+		if mission.icon_texture != null:
+			_mission_icons[i].hide()
+			_mission_icon_textures[i].show()
+			_mission_icon_textures[i].texture = mission.icon_texture
+			_mission_icon_textures[i].modulate = Color.WHITE
+			_mission_icon_textures[i].self_modulate = Color.WHITE
+			_mission_icon_textures[i].texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+			_mission_icon_textures[i].custom_minimum_size = Vector2(84, 84)
+		else:
+			_mission_icon_textures[i].hide()
+			_mission_icon_textures[i].texture = null
+			_mission_icons[i].show()
+			_mission_icons[i].text = str(mission.icon)
+		_mission_progress[i].text = "%d/%d" % [mission.progress, mission.target]
 
-		var style := card.get_theme_stylebox("panel") as StyleBoxFlat
+		var style := _mission_cards[i].get_theme_stylebox("panel") as StyleBoxFlat
 		if style:
+			# Duplicate so completion colour is not shared across cards.
+			var owned := style.duplicate() as StyleBoxFlat
 			if mission.is_complete():
-				style.bg_color = Color(0.28, 0.62, 0.42, 0.95)
+				owned.bg_color = Color(0.28, 0.62, 0.42, 0.95)
 			else:
-				style.bg_color = Color(0.22, 0.48, 0.88, 0.95)
+				owned.bg_color = Color(0.22, 0.48, 0.88, 0.95)
+			_mission_cards[i].add_theme_stylebox_override("panel", owned)
 
 
 func update_score(score: int) -> void:

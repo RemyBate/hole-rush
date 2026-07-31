@@ -47,10 +47,11 @@ func is_busy() -> bool:
 func try_collect(hole: Hole) -> bool:
 	if _collecting:
 		return false
-	var required := 1
+	# Match food swallow rule: hole radius must cover the pickup's visual size.
+	var need := _radius * GameConstants.SWALLOW_FIT_RATIO
 	if pickup_kind == CurrencyArt.Kind.KEY or pickup_kind == CurrencyArt.Kind.TROPHY:
-		required = 2
-	if hole.get_hole_size() < required:
+		need = maxf(need, GameConstants.HOLE_SIZE_2_RADIUS * 0.85)
+	if hole.radius < need:
 		return false
 	_start_collect(hole)
 	return true

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tools/visual_verify_mixed_level.gd" id="1"]
+
+[node name="VisualVerifyMixed" type="Node"]
+script = ExtResource("1")

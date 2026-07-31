@@ -1,6 +1,6 @@
 # Hole Rush — Google Play Store Listing Copy
 
-> **Before publishing:** Confirm `https://remydev.de/privacy-policy` is live (portfolio on Vercel), matching `GameConstants.PRIVACY_POLICY_URL` in `scripts/game_constants.gd`.
+> **Before publishing:** Confirm `https://remydev.de/games/privacy-policy` is live (portfolio on Vercel), matching `GameConstants.PRIVACY_POLICY_URL` in `scripts/game_constants.gd`.
 
 ---
 
@@ -86,5 +86,5 @@ Support: remymbu12@gmail.com
 | Field | Value |
 |-------|--------|
 | Support email | remymbu12@gmail.com |
-| Privacy policy URL | `https://remydev.de/privacy-policy` (same as `GameConstants.PRIVACY_POLICY_URL`) |
+| Privacy policy URL | `https://remydev.de/games/privacy-policy` (same as `GameConstants.PRIVACY_POLICY_URL`) |
 | Website (optional) | `https://remydev.de` |

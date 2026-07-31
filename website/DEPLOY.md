@@ -1,10 +1,10 @@
-# Hole Rush privacy policy — hosted on remydev.de
+# RemyDev games privacy policy — hosted on remydev.de
 
-The live privacy policy is served by the Next.js portfolio site:
+Master privacy policy for all current and future RemyDev mobile games:
 
-**https://remydev.de/privacy-policy**
+**https://remydev.de/games/privacy-policy**
 
-Source page: `portfolio-template/app/privacy-policy/page.tsx`
+Source page: `portfolio-template/app/games/privacy-policy/page.tsx`
 
 The game reads this URL from `scripts/game_constants.gd` → `PRIVACY_POLICY_URL`.
 

@@ -81,7 +81,7 @@ func refresh_ui() -> void:
 		_coins_label.text = _format_number(GameSettings.total_coins)
 	_lives_label.text = str(GameSettings.lives)
 	_lives_status.text = GameSettings.lives_status_text()
-	_level_button.text = "LEVEL %d" % GameSettings.highest_unlocked_level
+	_level_button.text = "LEVEL %d" % GameSettings.get_play_level()
 	_meta_bar.value = GameSettings.meta_progress_ratio() * 100.0
 	_meta_label.text = GameSettings.meta_progress_text()
 
@@ -359,13 +359,14 @@ func _highlight_nav(active_index: int) -> void:
 func _on_level_button_pressed() -> void:
 	GameSettings.play_ui_click()
 	GameSettings.vibrate(25)
-	_level_prep.open_for_level(GameSettings.highest_unlocked_level)
+	_level_prep.open_for_level(GameSettings.get_play_level())
 
 
 func _on_prep_play(level: int, boosters: Array) -> void:
 	if not GameSettings.can_play():
 		return
-	play_level.emit(level, boosters)
+	# Always honor the dev override — never launch saved level 22 while testing.
+	play_level.emit(GameSettings.resolve_play_level(level), boosters)
 
 
 func _on_settings_pressed() -> void:

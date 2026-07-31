@@ -26,7 +26,7 @@ func _ready() -> void:
 
 
 func open_for_level(level: int) -> void:
-	_level = clampi(level, 1, LevelTheme.MAX_LEVEL)
+	_level = GameSettings.resolve_play_level(level)
 	_selected.clear()
 	_title.text = "Level %d" % _level
 	_refresh_objectives()
@@ -54,13 +54,32 @@ func _finish_close() -> void:
 func _refresh_objectives() -> void:
 	for child in _objectives_box.get_children():
 		child.queue_free()
-	for line in GameSettings.level_objective_lines(_level):
+	var theme := LevelTheme.theme_for_level(_level)
+	var missions := MissionFactory.create_missions(theme, _level)
+	for mission in missions:
+		var m := mission as Mission
+		if m == null:
+			continue
+		var row := HBoxContainer.new()
+		row.alignment = BoxContainer.ALIGNMENT_CENTER
+		row.add_theme_constant_override("separation", 10)
+		if m.icon_texture != null:
+			var icon := TextureRect.new()
+			icon.texture = m.icon_texture
+			icon.custom_minimum_size = Vector2(56, 56)
+			icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+			icon.modulate = Color.WHITE
+			icon.self_modulate = Color.WHITE
+			row.add_child(icon)
 		var label := Label.new()
-		label.text = "• " + line
-		UIStyles.apply_cartoon_label(label, 24, 5)
+		label.text = "0/%d" % m.target
+		UIStyles.apply_cartoon_label(label, 26, 5)
 		label.add_theme_color_override("font_color", Color(0.2, 0.28, 0.42))
 		label.add_theme_color_override("font_outline_color", Color(1, 1, 1, 0.35))
-		_objectives_box.add_child(label)
+		row.add_child(label)
+		_objectives_box.add_child(row)
 
 
 func _build_booster_buttons() -> void:
@@ -124,6 +143,7 @@ func _on_play_pressed() -> void:
 		if GameSettings.get_booster_count(id) > 0:
 			boosters.append(id)
 	GameSettings.consume_boosters(boosters)
+	_level = GameSettings.resolve_play_level(_level)
 	play_pressed.emit(_level, boosters)
 	close_panel()
 

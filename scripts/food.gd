@@ -18,6 +18,11 @@ var level_theme: int = LevelTheme.Id.FRUIT_GARDEN
 var size_tier: int = ItemSizeTier.Tier.SMALL
 var is_mission_highlight: bool = false
 var score_value: int = 10
+## Catalog collectible key e.g. "fruits:4" (empty for legacy slot items).
+var catalog_key: String = ""
+var catalog_entry: ItemEntry = null
+## Applied catalog visual radius (base × per-level scale).
+var _catalog_visual_radius: float = 0.0
 
 var _radius: float = 16.0
 var _tier_visual_scale: float = 1.0
@@ -63,16 +68,60 @@ func setup(
 	level_theme = theme
 	size_tier = tier
 	is_mission_highlight = mission_highlight
-
-	_tier_visual_scale = ItemSizeTier.visual_scale(tier)
-	_required_hole_size = ItemSizeTier.required_hole_size(tier)
-	score_value = ItemSizeTier.score_value(tier)
+	catalog_key = ""
+	catalog_entry = null
 
 	var slot := int(type)
+	if CollectibleArt.is_textured_watermelon(theme, slot):
+		size_tier = CollectibleArt.watermelon_size_tier(slot)
+		_tier_visual_scale = 1.0
+		score_value = CollectibleArt.watermelon_score_value(slot)
+	else:
+		_tier_visual_scale = ItemSizeTier.visual_scale(tier)
+		score_value = ItemSizeTier.score_value(tier)
+
 	var base_r: float = CollectibleArt.visual_radius(theme, slot)
 	var visual_r: float = base_r * _tier_visual_scale
 	_radius = visual_r * 0.78
+	# Kept for UI / legacy callers; swallow checks use visual radius vs hole.radius.
+	_required_hole_size = ItemSizeTier.required_hole_size(size_tier)
+	_finish_setup()
 
+
+## Numbered catalog image (no fruit-name mapping).
+func setup_catalog(
+	position: Vector2,
+	entry: ItemEntry,
+	theme: int,
+	mission_highlight: bool = false,
+	visual_scale: float = 1.0
+) -> void:
+	global_position = position
+	catalog_entry = entry
+	catalog_key = entry.catalog_key()
+	level_theme = theme
+	is_mission_highlight = mission_highlight
+	item_type = Collectible.A
+	_tier_visual_scale = 1.0
+	score_value = entry.score_value
+	match entry.size_class:
+		ItemEntry.SizeClass.EXTRA_SMALL, ItemEntry.SizeClass.SMALL:
+			size_tier = ItemSizeTier.Tier.SMALL
+		ItemEntry.SizeClass.MEDIUM:
+			size_tier = ItemSizeTier.Tier.MEDIUM
+		_:
+			size_tier = ItemSizeTier.Tier.LARGE
+	var scale := clampf(visual_scale, 0.90, 1.15)
+	_catalog_visual_radius = entry.visual_radius * scale
+	_radius = _catalog_visual_radius * entry.collision_scale
+	_required_hole_size = ItemSizeTier.required_hole_size(size_tier)
+	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	modulate = Color.WHITE
+	self_modulate = Color.WHITE
+	_finish_setup()
+
+
+func _finish_setup() -> void:
 	var shape := $CollisionShape2D.shape as CircleShape2D
 	if shape:
 		shape.radius = _radius
@@ -86,12 +135,30 @@ func get_collision_radius() -> float:
 	return _radius
 
 
+func get_visual_radius() -> float:
+	if catalog_entry != null:
+		if _catalog_visual_radius > 0.0:
+			return _catalog_visual_radius
+		return catalog_entry.visual_radius * _tier_visual_scale
+	return CollectibleArt.visual_radius(level_theme, int(item_type)) * _tier_visual_scale
+
+
+## Growth added to the hole when this item is swallowed.
+func get_growth_contribution() -> float:
+	return GameConstants.GROWTH_RADIUS + get_visual_radius() * GameConstants.GROWTH_FROM_ITEM_RADIUS
+
+
 func get_required_hole_size() -> int:
 	return _required_hole_size
 
 
 func can_be_collected_by_hole_size(hole_size: int) -> bool:
 	return hole_size >= _required_hole_size
+
+
+## True when the hole's drawn radius is large enough to fit this item.
+func can_be_swallowed_by(hole: Hole) -> bool:
+	return hole.radius >= get_visual_radius() * GameConstants.SWALLOW_FIT_RATIO
 
 
 func is_busy() -> bool:
@@ -101,8 +168,7 @@ func is_busy() -> bool:
 func try_collect(hole: Hole) -> bool:
 	if _collecting:
 		return false
-	var hole_size := hole.get_hole_size()
-	if not can_be_collected_by_hole_size(hole_size):
+	if not can_be_swallowed_by(hole):
 		if _feedback_timer <= 0.0:
 			_show_too_large_feedback(hole)
 		return false
@@ -249,25 +315,27 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
-	var slot := int(item_type)
-	var base_r: float = CollectibleArt.visual_radius(level_theme, slot)
-	var visual_r: float = base_r * _tier_visual_scale
+	var visual_r: float = get_visual_radius()
 	var bob := sin(_bob_phase) * 2.0 if not _collecting else 0.0
 	var origin := _shake_offset + Vector2(0.0, bob)
 	var draw_scale := _draw_scale
+	var is_catalog := catalog_entry != null
 
-	if _collecting:
-		origin.y += _sink_offset_y
-		var depth := _fall_depth
-		if not _inside_hole:
+	# Soft ground shadow only (below art). Skip for catalog so PNGs stay bright/clear.
+	if not is_catalog:
+		if _collecting:
+			origin.y += _sink_offset_y
+			if not _inside_hole:
+				DrawUtils.draw_soft_shadow(
+					self, origin + Vector2(0.0, 6.0),
+					Vector2(visual_r * 1.25, visual_r * 0.48) * draw_scale, 0.2
+				)
+		else:
 			DrawUtils.draw_soft_shadow(
-				self, origin + Vector2(0.0, 6.0),
-				Vector2(visual_r * 1.25, visual_r * 0.48) * draw_scale, 0.2
+				self, origin, Vector2(visual_r * 1.2, visual_r * 0.45) * draw_scale, 0.22
 			)
-	else:
-		DrawUtils.draw_soft_shadow(
-			self, origin, Vector2(visual_r * 1.2, visual_r * 0.45) * draw_scale, 0.22
-		)
+	elif _collecting:
+		origin.y += _sink_offset_y
 
 	if _feedback_timer > 0.0 and not _collecting:
 		var pulse: float = 0.5 + sin(_feedback_timer * 20.0) * 0.5
@@ -282,22 +350,28 @@ func _draw() -> void:
 			origin, visual_r * draw_scale + 10.0, 0.0, TAU, 36,
 			Color(1.0, 0.92, 0.25, 0.75 * mission_pulse), 4.0
 		)
-		draw_arc(
-			origin, visual_r * draw_scale + 14.0, 0.0, TAU, 36,
-			Color(1.0, 1.0, 1.0, 0.25 * mission_pulse), 2.0
-		)
 
+	# Keep source PNG colours: force white modulate while drawing catalog art.
 	var prev_modulate := modulate
-	modulate = Color(prev_modulate.r, prev_modulate.g, prev_modulate.b, prev_modulate.a * _draw_alpha)
+	if is_catalog and not _collecting:
+		modulate = Color(1.0, 1.0, 1.0, prev_modulate.a * _draw_alpha)
+	else:
+		modulate = Color(prev_modulate.r, prev_modulate.g, prev_modulate.b, prev_modulate.a * _draw_alpha)
 
 	if _draw_scale > 0.01 and _draw_alpha > 0.02:
 		draw_set_transform(origin, _draw_rotation, Vector2(draw_scale, draw_scale))
-		CollectibleArt.draw_item(self, level_theme, slot, _tier_visual_scale)
+		if is_catalog:
+			# Draw at the instance visual radius (includes per-level scale).
+			CollectibleArt.draw_catalog_texture(
+				self, catalog_entry.texture, get_visual_radius()
+			)
+		else:
+			CollectibleArt.draw_item(self, level_theme, int(item_type), _tier_visual_scale)
 		if _inside_hole:
 			var rim_r: float = visual_r * draw_scale + 5.0
 			draw_arc(Vector2.ZERO, rim_r, 0.0, TAU, 32, Color(1.0, 1.0, 1.0, 0.35 * _draw_alpha), 2.5)
 			draw_arc(Vector2.ZERO, rim_r + 2.0, 0.0, TAU, 32, Color(0.55, 0.85, 1.0, 0.22 * _draw_alpha), 1.5)
-		elif not _collecting:
+		elif not _collecting and not is_catalog:
 			_draw_size_badge(Vector2.ZERO, visual_r)
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 

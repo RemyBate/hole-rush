@@ -157,6 +157,11 @@ func _on_food_collected(food: Food) -> void:
 	var is_target := _is_unfinished_mission_target(food)
 	GameSettings.play_item_collect_sfx(is_target)
 
+	if food.catalog_entry != null:
+		GameSettings.mark_fruit_discovered(food.catalog_entry.image_id)
+	if is_target:
+		GameSettings.register_mission_item_collected()
+
 	_collected += 1
 	_score += food.score_value
 	hud.update_score(_score)
@@ -305,6 +310,9 @@ func _on_victory_continue_pressed() -> void:
 		int(_pending_victory.get("score", 0)),
 		int(_pending_victory.get("collected", 0)),
 	)
+	if int(_pending_victory.get("stars", 0)) >= 3:
+		GameSettings.register_three_star_win()
+		GameSettings.save_profile()
 	var reward_payload := {}
 	if earned > 0:
 		reward_payload = {

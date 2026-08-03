@@ -37,6 +37,13 @@ var booster_freeze: int = 6
 var booster_magnet: int = 3
 var booster_double_coins: int = 3
 
+## Persistent collection / trophy stats (additive; never resets existing progress).
+var discovered_fruit_ids: Array = []
+var levels_won: int = 0
+var lifetime_coins: int = 0
+var three_star_wins: int = 0
+var mission_items_collected: int = 0
+
 var _music_player: AudioStreamPlayer
 var _sfx_player: AudioStreamPlayer
 ## Small rotating pool so rapid collects do not cut each other off.
@@ -156,7 +163,24 @@ func load_progress() -> void:
 	booster_freeze = maxi(0, int(data.get("booster_freeze", 6)))
 	booster_magnet = maxi(0, int(data.get("booster_magnet", 3)))
 	booster_double_coins = maxi(0, int(data.get("booster_double_coins", 3)))
+	discovered_fruit_ids = _load_int_array(data.get("discovered_fruit_ids", []))
+	levels_won = maxi(0, int(data.get("levels_won", maxi(0, highest_unlocked_level - 1))))
+	lifetime_coins = maxi(0, int(data.get("lifetime_coins", total_coins)))
+	three_star_wins = maxi(0, int(data.get("three_star_wins", 0)))
+	mission_items_collected = maxi(0, int(data.get("mission_items_collected", 0)))
 	tick_lives_regen()
+
+
+func _load_int_array(raw: Variant) -> Array:
+	var out: Array = []
+	if typeof(raw) != TYPE_ARRAY:
+		return out
+	for v in raw:
+		var id := int(v)
+		if id > 0 and not out.has(id):
+			out.append(id)
+	out.sort()
+	return out
 
 
 func tick_lives_regen() -> void:
@@ -230,6 +254,102 @@ func consume_boosters(ids: Array) -> void:
 	profile_changed.emit()
 
 
+func add_booster(id: int, amount: int = 1) -> void:
+	amount = maxi(0, amount)
+	match clampi(id, 0, 3):
+		0:
+			booster_lightning += amount
+		1:
+			booster_freeze += amount
+		2:
+			booster_magnet += amount
+		3:
+			booster_double_coins += amount
+	_write_progress_file(0)
+	profile_changed.emit()
+
+
+func can_afford_coins(cost: int) -> bool:
+	return total_coins >= maxi(0, cost)
+
+
+func can_afford_gems(cost: int) -> bool:
+	return total_gems >= maxi(0, cost)
+
+
+func spend_coins(amount: int) -> bool:
+	amount = maxi(0, amount)
+	if total_coins < amount:
+		return false
+	total_coins -= amount
+	_write_progress_file(0)
+	profile_changed.emit()
+	return true
+
+
+func spend_gems(amount: int) -> bool:
+	amount = maxi(0, amount)
+	if total_gems < amount:
+		return false
+	total_gems -= amount
+	_write_progress_file(0)
+	profile_changed.emit()
+	return true
+
+
+func refill_one_life() -> bool:
+	tick_lives_regen()
+	if lives >= MAX_LIVES:
+		return false
+	lives += 1
+	if lives >= MAX_LIVES:
+		lives_regen_at = 0
+	_write_progress_file(0)
+	profile_changed.emit()
+	return true
+
+
+func is_fruit_discovered(image_id: int) -> bool:
+	return discovered_fruit_ids.has(image_id)
+
+
+func mark_fruit_discovered(image_id: int) -> bool:
+	if image_id <= 0 or discovered_fruit_ids.has(image_id):
+		return false
+	discovered_fruit_ids.append(image_id)
+	discovered_fruit_ids.sort()
+	_write_progress_file(0)
+	profile_changed.emit()
+	return true
+
+
+func register_mission_item_collected() -> void:
+	mission_items_collected += 1
+	_write_progress_file(0)
+
+
+func trophy_definitions() -> Array:
+	var completed_levels := maxi(levels_won, maxi(0, highest_unlocked_level - 1))
+	var defs: Array = [
+		{"id": "first_level", "icon": "🏁", "title": "First Clear", "requirement": "Complete 1 level", "progress": completed_levels, "target": 1},
+		{"id": "levels_5", "icon": "5️⃣", "title": "On a Roll", "requirement": "Complete 5 levels", "progress": completed_levels, "target": 5},
+		{"id": "levels_10", "icon": "🔟", "title": "Dedicated", "requirement": "Complete 10 levels", "progress": completed_levels, "target": 10},
+		{"id": "levels_25", "icon": "🌟", "title": "Veteran", "requirement": "Complete 25 levels", "progress": completed_levels, "target": 25},
+		{"id": "coins_100", "icon": "🪙", "title": "Coin Starter", "requirement": "Earn 100 lifetime coins", "progress": lifetime_coins, "target": 100},
+		{"id": "coins_1000", "icon": "💰", "title": "Coin Bank", "requirement": "Earn 1,000 lifetime coins", "progress": lifetime_coins, "target": 1000},
+		{"id": "score_500", "icon": "⭐", "title": "Half Thousand", "requirement": "Best score 500+", "progress": best_score, "target": 500},
+		{"id": "score_1000", "icon": "🏅", "title": "High Scorer", "requirement": "Best score 1,000+", "progress": best_score, "target": 1000},
+		{"id": "three_star", "icon": "✨", "title": "Perfect Timing", "requirement": "Win with 3 stars once", "progress": three_star_wins, "target": 1},
+		{"id": "missions_50", "icon": "🎯", "title": "Mission Hunter", "requirement": "Collect 50 mission items", "progress": mission_items_collected, "target": 50},
+		{"id": "collection_5", "icon": "🖼️", "title": "Collector", "requirement": "Discover 5 fruit images", "progress": discovered_fruit_ids.size(), "target": 5},
+	]
+	for d in defs:
+		var p := int(d.get("progress", 0))
+		var t := maxi(1, int(d.get("target", 1)))
+		d["unlocked"] = p >= t
+	return defs
+
+
 func meta_progress_text() -> String:
 	return "%d/%d" % [reward_track_xp % META_GOAL_XP, META_GOAL_XP]
 
@@ -273,18 +393,24 @@ func apply_victory_continue(
 	collected: int
 ) -> void:
 	total_coins += maxi(0, coins_earned)
+	lifetime_coins += maxi(0, coins_earned)
 	total_keys += maxi(0, keys_earned)
 	total_gems += maxi(0, gems_earned)
 	reward_track_xp += maxi(
 		0,
 		coins_earned + keys_earned * 5 + gems_earned * 8 + trophy_points * 3
 	)
+	levels_won += 1
 	current_level = clampi(next_level, 1, LevelTheme.MAX_LEVEL)
 	highest_unlocked_level = maxi(highest_unlocked_level, current_level)
 	last_score = maxi(0, score)
 	best_score = maxi(best_score, last_score)
 	_write_progress_file(collected)
 	vibrate(60)
+
+
+func register_three_star_win() -> void:
+	three_star_wins += 1
 
 
 func _write_progress_file(collected: int) -> void:
@@ -304,6 +430,11 @@ func _write_progress_file(collected: int) -> void:
 		"booster_freeze": booster_freeze,
 		"booster_magnet": booster_magnet,
 		"booster_double_coins": booster_double_coins,
+		"discovered_fruit_ids": discovered_fruit_ids,
+		"levels_won": levels_won,
+		"lifetime_coins": lifetime_coins,
+		"three_star_wins": three_star_wins,
+		"mission_items_collected": mission_items_collected,
 		"saved_at": Time.get_unix_time_from_system(),
 	}
 	var file := FileAccess.open(PROGRESS_PATH, FileAccess.WRITE)

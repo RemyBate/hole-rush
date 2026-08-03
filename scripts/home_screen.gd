@@ -5,6 +5,10 @@ signal play_level(level: int, boosters: Array)
 
 const SettingsPopupScene: PackedScene = preload("res://scenes/ui/settings_popup.tscn")
 const ShopScreenScene: PackedScene = preload("res://scenes/ui/shop_screen.tscn")
+const MapPopupScene: PackedScene = preload("res://scenes/ui/map_popup.tscn")
+const TrophyPopupScene: PackedScene = preload("res://scenes/ui/trophy_popup.tscn")
+const CollectionPopupScene: PackedScene = preload("res://scenes/ui/collection_popup.tscn")
+const EventPopupScene: PackedScene = preload("res://scenes/ui/event_popup.tscn")
 const GoldCoinIconScript: Script = preload("res://scripts/gold_coin_icon.gd")
 
 const EVENT_LEFT: Array = [
@@ -42,6 +46,10 @@ var _nav_buttons: Array[Button] = []
 var _nav_wraps: Array[PanelContainer] = []
 var _settings_popup: Control = null
 var _shop_screen: Control = null
+var _map_popup: Control = null
+var _trophy_popup: Control = null
+var _collection_popup: Control = null
+var _event_popup: Control = null
 var _level_bounce_time: float = 0.0
 var _event_timers: Dictionary = {}
 var _progress_timer_end: int = 0
@@ -60,6 +68,7 @@ func _ready() -> void:
 	GameSettings.profile_changed.connect(refresh_ui)
 	_setup_settings()
 	_setup_shop()
+	_setup_feature_popups()
 	_progress_timer_end = int(Time.get_unix_time_from_system()) + 6 * 86400 + 11 * 3600
 	refresh_ui()
 	_start_event_timers()
@@ -278,6 +287,7 @@ func _make_event_widget(icon: String, title: String, color: Color, timer_offset:
 	btn.add_theme_color_override("font_outline_color", Color(0.06, 0.12, 0.2, 0.9))
 	btn.add_theme_constant_override("outline_size", 4)
 	UIStyles.bind_button(btn)
+	btn.pressed.connect(_on_event_pressed.bind(title))
 	btn_panel.add_child(btn)
 
 	var name_lbl := Label.new()
@@ -396,18 +406,62 @@ func _on_avatar_pressed() -> void:
 func _on_nav_pressed(index: int) -> void:
 	GameSettings.play_ui_click()
 	_highlight_nav(index)
+	_close_home_popups()
 	match index:
 		0:
 			if _shop_screen and _shop_screen.has_method("open_shop"):
 				_shop_screen.open_shop()
+		1:
+			if _map_popup and _map_popup.has_method("open_map"):
+				_map_popup.open_map()
 		2:
 			pass
+		3:
+			if _trophy_popup and _trophy_popup.has_method("open_trophies"):
+				_trophy_popup.open_trophies()
+		4:
+			if _collection_popup and _collection_popup.has_method("open_collection"):
+				_collection_popup.open_collection()
+
+
+func _on_event_pressed(title: String) -> void:
+	GameSettings.play_ui_click()
+	_close_home_popups()
+	if _event_popup == null:
+		return
+	var event_id := _event_id_for_title(title)
+	_event_popup.open_event(event_id, title)
+
+
+func _event_id_for_title(title: String) -> String:
+	match title:
+		"Tournament":
+			return "tournament"
+		"Treasure Hunt":
+			return "treasure_hunt"
+		"Daily Event":
+			return "daily"
+		"Star Event":
+			return "star"
+		"Coin Frenzy":
+			return "coin_frenzy"
+		"Special Event":
+			return "special"
 		_:
-			if _settings_popup and _settings_popup.has_method("show_info_message"):
-				_settings_popup.show_info_message(
-					"Coming Soon",
-					"This section will be available in a future update."
-				)
+			return "special"
+
+
+func _close_home_popups() -> void:
+	if _shop_screen and _shop_screen.visible and _shop_screen.has_method("close_shop"):
+		_shop_screen.close_shop()
+	if _map_popup and _map_popup.visible and _map_popup.has_method("close_modal"):
+		_map_popup.close_modal()
+	if _trophy_popup and _trophy_popup.visible and _trophy_popup.has_method("close_modal"):
+		_trophy_popup.close_modal()
+	if _collection_popup and _collection_popup.visible and _collection_popup.has_method("close_modal"):
+		_collection_popup.close_modal()
+	if _event_popup and _event_popup.visible and _event_popup.has_method("close_modal"):
+		_event_popup.close_modal()
 
 
 func _setup_shop() -> void:
@@ -418,6 +472,34 @@ func _setup_shop() -> void:
 	add_child(shop)
 	shop.z_index = 75
 	_shop_screen = shop
+
+
+func _setup_feature_popups() -> void:
+	_map_popup = MapPopupScene.instantiate()
+	add_child(_map_popup)
+	_map_popup.z_index = 72
+	_map_popup.level_selected.connect(_on_map_level_selected)
+
+	_trophy_popup = TrophyPopupScene.instantiate()
+	add_child(_trophy_popup)
+	_trophy_popup.z_index = 72
+
+	_collection_popup = CollectionPopupScene.instantiate()
+	add_child(_collection_popup)
+	_collection_popup.z_index = 72
+
+	_event_popup = EventPopupScene.instantiate()
+	add_child(_event_popup)
+	_event_popup.z_index = 73
+	_event_popup.play_requested.connect(_on_event_play_requested)
+
+
+func _on_map_level_selected(level: int) -> void:
+	_level_prep.open_for_level(level)
+
+
+func _on_event_play_requested(_event_id: String) -> void:
+	_level_prep.open_for_level(GameSettings.get_play_level())
 
 
 func _setup_settings() -> void:

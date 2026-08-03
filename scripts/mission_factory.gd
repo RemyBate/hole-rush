@@ -37,7 +37,7 @@ static func _missions_from_plan(plan: LevelPlan) -> Array:
 		var mission := Mission.new()
 		mission.item_type = -index
 		mission.catalog_key = entry.catalog_key()
-		mission.icon_texture = entry.texture
+		mission.icon_texture = entry.hud_texture()
 		mission.hide_name = true
 		mission.display_name = ""
 		mission.icon = ""

@@ -13,14 +13,14 @@ const GROWTH_RADIUS: float = 3.0
 const GROWTH_FROM_ITEM_RADIUS: float = 0.06
 const MAX_HOLE_SIZE: int = 5
 
-const INITIAL_HOLE_RADIUS: float = 38.0
-const MIN_HOLE_RADIUS: float = 38.0
-const MAX_HOLE_RADIUS: float = 160.0
+const INITIAL_HOLE_RADIUS: float = 48.0
+const MIN_HOLE_RADIUS: float = 48.0
+const MAX_HOLE_RADIUS: float = 200.0
 
-const HOLE_SIZE_2_RADIUS: float = 52.0
-const HOLE_SIZE_3_RADIUS: float = 70.0
-const HOLE_SIZE_4_RADIUS: float = 92.0
-const HOLE_SIZE_5_RADIUS: float = 118.0
+const HOLE_SIZE_2_RADIUS: float = 66.0
+const HOLE_SIZE_3_RADIUS: float = 88.0
+const HOLE_SIZE_4_RADIUS: float = 114.0
+const HOLE_SIZE_5_RADIUS: float = 146.0
 
 ## Hole must be at least this fraction of the item's visual radius to swallow it.
 const SWALLOW_FIT_RATIO: float = 1.0

@@ -12,12 +12,17 @@ var texture: Texture2D = null
 var size_class: int = SizeClass.MEDIUM
 ## Half of on-field visual diameter (world px).
 var visual_radius: float = 38.0
-var collision_scale: float = 0.82
+var collision_scale: float = 0.88
 var score_value: int = 5
 var growth_bonus: float = 0.06
 var spawn_weight: float = 1.0
 var mission_eligible: bool = true
 var content_fill: float = 0.8
+## Opaque pixel bounds in source image space (for HUD atlas / padding reports).
+var content_rect: Rect2i = Rect2i()
+## Longest opaque side in source pixels; used to scale draw to target diameter.
+var content_span_px: float = 0.0
+var source_max_px: float = 0.0
 var valid: bool = false
 var invalid_reason: String = ""
 
@@ -34,18 +39,32 @@ func visual_diameter() -> float:
 	return visual_radius * 2.0
 
 
+## Runtime atlas of opaque fruit only (does not modify source PNG).
+func hud_texture() -> Texture2D:
+	if texture == null:
+		return null
+	if content_rect.size.x < 4 or content_rect.size.y < 4:
+		return texture
+	var atlas := AtlasTexture.new()
+	atlas.atlas = texture
+	atlas.region = Rect2(content_rect)
+	return atlas
+
+
 static func radius_for_class(size_class: int) -> float:
+	# Diameters after 405×720 testing: XS≈78, S≈90, M≈112, L≈140, XL≈168.
+	# XS raised above the starting suggestion so berries/slices stay recognisable.
 	match clampi(size_class, 0, SizeClass.EXTRA_LARGE):
 		SizeClass.EXTRA_SMALL:
-			return 22.0 # ~44 px diameter
+			return 39.0
 		SizeClass.SMALL:
-			return 32.0 # ~64 px
+			return 45.0
 		SizeClass.MEDIUM:
-			return 46.0 # ~92 px
+			return 56.0
 		SizeClass.LARGE:
-			return 62.0 # ~124 px
+			return 70.0
 		_:
-			return 76.0 # ~152 px EXTRA_LARGE
+			return 84.0
 
 
 static func score_for_class(size_class: int) -> int:

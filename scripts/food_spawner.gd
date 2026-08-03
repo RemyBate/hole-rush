@@ -2,7 +2,7 @@ class_name FoodSpawner
 extends Node2D
 
 const FoodScene: PackedScene = preload("res://scenes/food.tscn")
-const START_HOLE_CLEAR_RADIUS: float = 170.0
+const START_HOLE_CLEAR_RADIUS: float = 230.0
 
 signal food_collected(food: Food)
 
@@ -231,7 +231,7 @@ func _try_spawn_catalog(pos: Vector2, entry: ItemEntry, mission_highlight: bool)
 		return false
 	var scale := LevelPlan.visual_scale_for(_level, entry.image_id)
 	var visual_r := entry.visual_radius * scale
-	var pad := visual_r * 0.88
+	var pad := visual_r * 0.90
 	if not _is_position_valid(pos, pad):
 		return false
 	var food: Food = FoodScene.instantiate() as Food

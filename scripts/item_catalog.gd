@@ -119,11 +119,23 @@ static func _build_entry(category: String, image_id: int) -> ItemEntry:
 		entry.invalid_reason = "too few transparent pixels (%.0f%%)" % (transparent_ratio * 100.0)
 		return entry
 
-	var bbox := img.get_used_rect()
+	var bbox := _opaque_content_rect(img, 0.22)
 	var fill := 0.75
 	if bbox.size.x > 0 and bbox.size.y > 0:
 		fill = maxf(float(bbox.size.x) / float(w), float(bbox.size.y) / float(h))
-	entry.content_fill = clampf(fill, 0.35, 0.98)
+		entry.content_rect = bbox
+		entry.content_span_px = float(maxi(bbox.size.x, bbox.size.y))
+	entry.source_max_px = float(maxi(w, h))
+	# Slightly under-report fill so soft fringe does not leave fruits looking undersized.
+	entry.content_fill = clampf(fill * 0.88, 0.18, 0.92)
+	if entry.content_span_px < 4.0:
+		entry.content_span_px = entry.source_max_px * entry.content_fill
+	if entry.content_fill < 0.55:
+		print(
+			"[ItemCatalog] large transparent padding: ", entry.path,
+			" content_fill=", snappedf(entry.content_fill, 0.01),
+			" bbox=", bbox, " / ", w, "x", h
+		)
 
 	# Stable size class: deterministic ID spread + content-density bias (no fruit names).
 	var content_ratio := 1.0 - transparent_ratio
@@ -146,6 +158,33 @@ static func _build_entry(category: String, image_id: int) -> ItemEntry:
 	entry.valid = true
 	entry.mission_eligible = true
 	return entry
+
+
+## Bounding rect of pixels with alpha above threshold (ignores soft fringe).
+static func _opaque_content_rect(img: Image, alpha_threshold: float) -> Rect2i:
+	var w := img.get_width()
+	var h := img.get_height()
+	var min_x := w
+	var min_y := h
+	var max_x := -1
+	var max_y := -1
+	var step := maxi(1, int(sqrt(float(w * h) / 25000.0)))
+	for y in range(0, h, step):
+		for x in range(0, w, step):
+			if img.get_pixel(x, y).a > alpha_threshold:
+				min_x = mini(min_x, x)
+				min_y = mini(min_y, y)
+				max_x = maxi(max_x, x)
+				max_y = maxi(max_y, y)
+	if max_x < min_x:
+		return img.get_used_rect()
+	# Small expand only — avoid inflating fill with empty fringe.
+	var pad := maxi(1, step)
+	min_x = maxi(0, min_x - pad)
+	min_y = maxi(0, min_y - pad)
+	max_x = mini(w - 1, max_x + pad)
+	max_y = mini(h - 1, max_y + pad)
+	return Rect2i(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1)
 
 
 ## Spread numbered IDs across size classes with a medium/large bias for mobile readability.

@@ -77,17 +77,41 @@ static func draw_item(canvas: CanvasItem, theme: int, slot: int, tier_scale: flo
 static func draw_catalog_entry(canvas: CanvasItem, entry: ItemEntry, tier_scale: float = 1.0) -> void:
 	if entry == null:
 		return
-	draw_catalog_texture(canvas, entry.texture, entry.visual_radius * tier_scale)
+	draw_catalog_texture(
+		canvas,
+		entry.texture,
+		entry.visual_radius * tier_scale,
+		entry.content_fill,
+		entry.content_span_px,
+		entry.source_max_px
+	)
 
 
-static func draw_catalog_texture(canvas: CanvasItem, texture: Texture2D, visual_radius: float) -> void:
+static func draw_catalog_texture(
+	canvas: CanvasItem,
+	texture: Texture2D,
+	visual_radius: float,
+	content_fill: float = 0.85,
+	content_span_px: float = 0.0,
+	source_max_px: float = 0.0
+) -> void:
 	if texture == null or visual_radius <= 0.0:
 		return
 	var target_diam: float = visual_radius * 2.0
 	var tex_size: Vector2 = texture.get_size()
 	if tex_size.x <= 0.0 or tex_size.y <= 0.0:
 		return
-	var uniform: float = target_diam / maxf(tex_size.x, tex_size.y)
+	# Map opaque fruit span (not full canvas) onto target_diam; keep aspect ratio.
+	var tex_max: float = maxf(tex_size.x, tex_size.y)
+	var span: float = content_span_px
+	if span >= 4.0 and source_max_px >= 4.0:
+		# Convert source-image span into texture pixel space if sizes differ.
+		span = content_span_px * (tex_max / source_max_px)
+	else:
+		span = tex_max * clampf(content_fill, 0.18, 0.92)
+	# Nudge up slightly so soft alpha fringe does not leave fruit undersized.
+	span *= 0.92
+	var uniform: float = target_diam / maxf(span, 1.0)
 	var draw_w: float = tex_size.x * uniform
 	var draw_h: float = tex_size.y * uniform
 	canvas.draw_texture_rect(

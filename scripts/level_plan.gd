@@ -118,10 +118,11 @@ static func _spawn_margin(entry: ItemEntry) -> int:
 			return 1
 
 
-## Per-level visual scale in [0.90, 1.15], stable for (level, image_id).
+## Per-level visual scale in [0.98, 1.10], stable for (level, image_id).
+## Floor kept high so variation never pushes items below readable size.
 static func visual_scale_for(level: int, image_id: int) -> float:
-	var bucket: int = absi(level * 13 + image_id * 7) % 26
-	return 0.90 + float(bucket) / 100.0
+	var bucket: int = absi(level * 13 + image_id * 7) % 13
+	return 0.98 + float(bucket) / 100.0
 
 
 static func _shuffle(arr: Array, rng: RandomNumberGenerator) -> void:

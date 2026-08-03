@@ -50,7 +50,7 @@ func _check(level: int) -> int:
 		radii.append(r)
 		var sc := f.catalog_entry.size_class
 		classes[sc] = int(classes.get(sc, 0)) + 1
-		if r < 15.0:
+		if r < 28.0:
 			push_error("[BGSIZE] still tiny radius=%s id=%d" % [r, f.catalog_entry.image_id])
 			failed += 1
 		# Collision should track visual.
@@ -63,11 +63,11 @@ func _check(level: int) -> int:
 	print("[BGSIZE] L", level, " foods=", foods.size(), " classes=", classes)
 	if radii.size() > 0:
 		print("[BGSIZE] radius min=", radii[0], " med=", radii[radii.size() / 2], " max=", radii[radii.size() - 1])
-		if radii[radii.size() - 1] < 40.0:
+		if radii[radii.size() - 1] < 60.0:
 			push_error("[BGSIZE] no large items visible")
 			failed += 1
-		if radii[0] > 35.0 and classes.size() < 2:
-			push_error("[BGSIZE] missing small variation")
+		if radii[0] < 28.0:
+			push_error("[BGSIZE] smallest item below readable floor")
 			failed += 1
 
 	RenderingServer.force_draw()

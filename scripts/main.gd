@@ -56,19 +56,26 @@ func _show_home_with_reward(reward_payload: Dictionary) -> void:
 
 func _on_play_level(level: int, boosters: Array) -> void:
 	if not GameSettings.can_play():
+		push_warning("[MAIN] start level blocked — no lives")
 		return
-	_transition_to_game(GameSettings.resolve_play_level(level), boosters)
+	var resolved := GameSettings.resolve_play_level(level)
+	print("[MAIN] start level received level=", resolved, " boosters=", boosters)
+	_transition_to_game(resolved, boosters)
 
 
 func _transition_to_game(level: int, boosters: Array) -> void:
 	level = GameSettings.resolve_play_level(level)
 	_fade_out(0.26)
 	await get_tree().create_timer(0.28).timeout
-	_home.hide()
+	if _home != null and is_instance_valid(_home):
+		_home.hide()
 	_game = GameScene.instantiate() as Node2D
 	add_child(_game)
 	if _game.has_method("begin_level"):
+		print("[GAME] begin_level called level=", level, " boosters=", boosters)
 		_game.begin_level(level, boosters)
+	else:
+		push_error("[MAIN] Game scene missing begin_level")
 	if _game.has_signal("exit_to_home"):
 		_game.exit_to_home.connect(_return_home)
 	_fade_in(0.34)

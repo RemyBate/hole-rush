@@ -71,10 +71,29 @@ def music_loop():
     return seq[: SAMPLE_RATE * 4]
 
 
+def collect_normal():
+	# Soft short swallow/pop — ordinary non-target collect.
+	return mix(
+		tone(420, 0.06, lambda t: (1 - t) ** 0.7),
+		tone(280, 0.05, lambda t: (1 - t) * 0.55),
+	)
+
+
+def collect_target():
+	# Brighter success sparkle for unfinished mission targets.
+	return mix(
+		tone(880, 0.05, lambda t: 1 - t),
+		tone(1175, 0.07, lambda t: max(0, 1 - t * 1.15)),
+		tone(1568, 0.09, lambda t: max(0, 1 - t * 1.35)),
+	)
+
+
 if __name__ == "__main__":
     write_wav(OUT / "ui_click.wav", ui_click())
     write_wav(OUT / "coin_collect.wav", coin_collect())
     write_wav(OUT / "win_jingle.wav", win_jingle())
     write_wav(OUT / "lose_tone.wav", lose_tone())
     write_wav(OUT / "music_loop.wav", music_loop())
+    write_wav(OUT / "collect_normal.wav", collect_normal())
+    write_wav(OUT / "collect_target.wav", collect_target())
     print(f"Wrote audio to {OUT}")

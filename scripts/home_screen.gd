@@ -364,9 +364,11 @@ func _on_level_button_pressed() -> void:
 
 func _on_prep_play(level: int, boosters: Array) -> void:
 	if not GameSettings.can_play():
+		push_warning("[HOME] play_level blocked — no lives")
 		return
-	# Always honor the dev override — never launch saved level 22 while testing.
-	play_level.emit(GameSettings.resolve_play_level(level), boosters)
+	var resolved := GameSettings.resolve_play_level(level)
+	print("[HOME] start level received level=", resolved, " boosters=", boosters)
+	play_level.emit(resolved, boosters)
 
 
 func _on_settings_pressed() -> void:

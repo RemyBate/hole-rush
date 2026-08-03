@@ -111,7 +111,7 @@ func setup_catalog(
 			size_tier = ItemSizeTier.Tier.MEDIUM
 		_:
 			size_tier = ItemSizeTier.Tier.LARGE
-	var scale := clampf(visual_scale, 0.90, 1.15)
+	var scale := clampf(visual_scale, 0.98, 1.10)
 	_catalog_visual_radius = entry.visual_radius * scale
 	_radius = _catalog_visual_radius * entry.collision_scale
 	_required_hole_size = ItemSizeTier.required_hole_size(size_tier)
@@ -277,7 +277,7 @@ func _finish_collect() -> void:
 	if _collect_hole != null and is_instance_valid(_collect_hole):
 		_collect_hole.pulse_swallow()
 
-	GameSettings.play_sfx()
+	# Collection SFX is chosen in Game after mission-target check (normal vs target).
 	GameSettings.vibrate(30)
 	collected.emit(self)
 	queue_free()
@@ -361,9 +361,14 @@ func _draw() -> void:
 	if _draw_scale > 0.01 and _draw_alpha > 0.02:
 		draw_set_transform(origin, _draw_rotation, Vector2(draw_scale, draw_scale))
 		if is_catalog:
-			# Draw at the instance visual radius (includes per-level scale).
+			# Draw so opaque content matches instance visual radius (accounts for PNG padding).
 			CollectibleArt.draw_catalog_texture(
-				self, catalog_entry.texture, get_visual_radius()
+				self,
+				catalog_entry.texture,
+				get_visual_radius(),
+				catalog_entry.content_fill,
+				catalog_entry.content_span_px,
+				catalog_entry.source_max_px
 			)
 		else:
 			CollectibleArt.draw_item(self, level_theme, int(item_type), _tier_visual_scale)

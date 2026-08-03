@@ -153,6 +153,10 @@ func _on_food_collected(food: Food) -> void:
 	if _state != GameState.PLAYING:
 		return
 
+	# Choose sound before progress update so completed targets use the normal pop.
+	var is_target := _is_unfinished_mission_target(food)
+	GameSettings.play_item_collect_sfx(is_target)
+
 	_collected += 1
 	_score += food.score_value
 	hud.update_score(_score)
@@ -163,6 +167,18 @@ func _on_food_collected(food: Food) -> void:
 
 	if _all_missions_complete():
 		_win_match()
+
+
+func _is_unfinished_mission_target(food: Food) -> bool:
+	for mission in _missions:
+		var m := mission as Mission
+		if m == null:
+			continue
+		if m.is_complete():
+			continue
+		if m.matches_food(food):
+			return true
+	return false
 
 
 func _on_currency_collected(pickup: CurrencyPickup) -> void:

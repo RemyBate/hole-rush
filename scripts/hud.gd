@@ -61,7 +61,7 @@ func _cache_mission_widgets() -> void:
 		if tex == null:
 			tex = TextureRect.new()
 			tex.name = "IconTexture"
-			tex.custom_minimum_size = Vector2(84, 84)
+			tex.custom_minimum_size = Vector2(104, 104)
 			tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			tex.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -150,7 +150,7 @@ func update_missions(missions: Array) -> void:
 			_mission_icon_textures[i].modulate = Color.WHITE
 			_mission_icon_textures[i].self_modulate = Color.WHITE
 			_mission_icon_textures[i].texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
-			_mission_icon_textures[i].custom_minimum_size = Vector2(84, 84)
+			_mission_icon_textures[i].custom_minimum_size = Vector2(104, 104)
 		else:
 			_mission_icon_textures[i].hide()
 			_mission_icon_textures[i].texture = null

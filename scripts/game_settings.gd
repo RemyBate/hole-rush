@@ -39,12 +39,18 @@ var booster_double_coins: int = 3
 
 var _music_player: AudioStreamPlayer
 var _sfx_player: AudioStreamPlayer
+## Small rotating pool so rapid collects do not cut each other off.
+var _sfx_pool: Array[AudioStreamPlayer] = []
+var _sfx_pool_index: int = 0
+var _stream_cache: Dictionary = {}
+var _collect_pitch_rng := RandomNumberGenerator.new()
 
 
 func _ready() -> void:
 	load_settings()
 	load_progress()
 	_setup_audio()
+	_collect_pitch_rng.randomize()
 
 
 ## Level shown on home Play / launched into a match.
@@ -67,6 +73,14 @@ func _setup_audio() -> void:
 	_sfx_player.name = "SfxPlayer"
 	_sfx_player.bus = "Master"
 	add_child(_sfx_player)
+
+	_sfx_pool.clear()
+	for i in 4:
+		var player := AudioStreamPlayer.new()
+		player.name = "SfxPool_%d" % i
+		player.bus = "Master"
+		add_child(player)
+		_sfx_pool.append(player)
 
 	var music := _load_audio_stream("res://audio/music_loop")
 	if music != null:
@@ -371,6 +385,25 @@ func play_sfx() -> void:
 	_play_named_sfx("res://audio/ui_click", _play_generated_blip)
 
 
+## Soft swallow for non-target items (or already-completed targets).
+func play_collect_normal_sfx() -> void:
+	var pitch := _collect_pitch_rng.randf_range(0.96, 1.04)
+	_play_pooled_sfx("res://audio/collect_normal", pitch, -2.0, _play_generated_collect_normal)
+
+
+## Brighter success sound for unfinished mission-target items.
+func play_collect_target_sfx() -> void:
+	var pitch := _collect_pitch_rng.randf_range(1.02, 1.08)
+	_play_pooled_sfx("res://audio/collect_target", pitch, -1.0, _play_generated_collect_target)
+
+
+func play_item_collect_sfx(is_unfinished_mission_target: bool) -> void:
+	if is_unfinished_mission_target:
+		play_collect_target_sfx()
+	else:
+		play_collect_normal_sfx()
+
+
 func play_coin_collect_sfx() -> void:
 	_play_named_sfx("res://audio/coin_collect", _play_generated_coin_chime)
 
@@ -392,21 +425,51 @@ func _fallback_lose_sfx() -> void:
 
 
 func _play_named_sfx(path_base: String, fallback: Callable) -> void:
-	if not sound_enabled or _sfx_player == null:
+	if not sound_enabled:
 		return
 	var stream := _load_audio_stream(path_base)
 	if stream != null:
-		_sfx_player.stream = stream
-		_sfx_player.play()
+		_play_on_player(_next_sfx_player(), stream, 1.0, 0.0)
 	else:
 		fallback.call()
 
 
+func _play_pooled_sfx(path_base: String, pitch: float, volume_db: float, fallback: Callable) -> void:
+	if not sound_enabled:
+		return
+	var stream := _load_audio_stream(path_base)
+	if stream != null:
+		_play_on_player(_next_sfx_player(), stream, pitch, volume_db)
+	else:
+		fallback.call()
+
+
+func _next_sfx_player() -> AudioStreamPlayer:
+	if _sfx_pool.is_empty():
+		return _sfx_player
+	var player := _sfx_pool[_sfx_pool_index]
+	_sfx_pool_index = (_sfx_pool_index + 1) % _sfx_pool.size()
+	return player
+
+
+func _play_on_player(player: AudioStreamPlayer, stream: AudioStream, pitch: float, volume_db: float) -> void:
+	if player == null or stream == null:
+		return
+	player.stream = stream
+	player.pitch_scale = pitch
+	player.volume_db = volume_db
+	player.play()
+
+
 func _load_audio_stream(path_base: String) -> AudioStream:
+	if _stream_cache.has(path_base):
+		return _stream_cache[path_base] as AudioStream
 	for ext in ["wav", "ogg"]:
 		var path := "%s.%s" % [path_base, ext]
 		if ResourceLoader.exists(path):
-			return load(path) as AudioStream
+			var stream := load(path) as AudioStream
+			_stream_cache[path_base] = stream
+			return stream
 	return null
 
 
@@ -429,7 +492,17 @@ func _play_generated_coin_chime() -> void:
 	_play_generated_tone(640, 14.0, 90.0)
 
 
+func _play_generated_collect_normal() -> void:
+	_play_generated_tone(700, 5.0, 58.0)
+
+
+func _play_generated_collect_target() -> void:
+	_play_generated_tone(1100, 12.0, 78.0)
+
+
 func _play_generated_tone(sample_count: int, wave_cycles: float, volume: float) -> void:
+	if not sound_enabled:
+		return
 	var wav := AudioStreamWAV.new()
 	wav.mix_rate = 22050
 	wav.format = AudioStreamWAV.FORMAT_8_BITS
@@ -441,8 +514,7 @@ func _play_generated_tone(sample_count: int, wave_cycles: float, volume: float) 
 		var env := (1.0 - t) * sin(t * TAU * wave_cycles)
 		data[i] = int(clampf(128.0 + env * volume, 0.0, 255.0))
 	wav.data = data
-	_sfx_player.stream = wav
-	_sfx_player.play()
+	_play_on_player(_next_sfx_player(), wav, 1.0, 0.0)
 
 
 func vibrate(duration_ms: int = 40) -> void:

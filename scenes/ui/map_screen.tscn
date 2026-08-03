@@ -1,0 +1,126 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/map_screen.gd" id="1_map"]
+
+[node name="MapScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_map")
+
+[node name="Bg" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.35, 0.72, 0.95, 1)
+
+[node name="BgHill" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -280.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+color = Color(0.32, 0.72, 0.38, 1)
+
+[node name="Root" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -118.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+
+[node name="Header" type="PanelContainer" parent="Root"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+
+[node name="HeaderMargin" type="MarginContainer" parent="Root/Header"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="HeaderRow" type="HBoxContainer" parent="Root/Header/HeaderMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="LevelPill" type="PanelContainer" parent="Root/Header/HeaderMargin/HeaderRow"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="LevelPillMargin" type="MarginContainer" parent="Root/Header/HeaderMargin/HeaderRow/LevelPill"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 6
+
+[node name="LevelInfo" type="Label" parent="Root/Header/HeaderMargin/HeaderRow/LevelPill/LevelPillMargin"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Lv 1"
+vertical_alignment = 1
+
+[node name="TitleLabel" type="Label" parent="Root/Header/HeaderMargin/HeaderRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 38
+text = "JOURNEY"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="Root/Header/HeaderMargin/HeaderRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+focus_mode = 0
+text = "✕"
+
+[node name="StatusLabel" type="Label" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = ""
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Scroll" type="ScrollContainer" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 1
+
+[node name="PathPad" type="MarginContainer" parent="Root/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 16
+
+[node name="PathStack" type="VBoxContainer" parent="Root/Scroll/PathPad"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10

@@ -12,7 +12,7 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("1_shop")
 
-[node name="Dim" type="ColorRect" parent="."]
+[node name="Bg" type="ColorRect" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -20,9 +20,153 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.02, 0.06, 0.14, 0.72)
+mouse_filter = 0
+color = Color(0.07, 0.18, 0.42, 1)
 
-[node name="Panel" type="PanelContainer" parent="."]
+[node name="BgAccent" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 168.0
+grow_horizontal = 2
+mouse_filter = 2
+color = Color(0.1, 0.28, 0.62, 1)
+
+[node name="Root" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -118.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+
+[node name="Header" type="PanelContainer" parent="Root"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 108)
+layout_mode = 2
+
+[node name="HeaderMargin" type="MarginContainer" parent="Root/Header"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="HeaderRow" type="HBoxContainer" parent="Root/Header/HeaderMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="Balances" type="VBoxContainer" parent="Root/Header/HeaderMargin/HeaderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="CoinPill" type="PanelContainer" parent="Root/Header/HeaderMargin/HeaderRow/Balances"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="CoinRow" type="HBoxContainer" parent="Root/Header/HeaderMargin/HeaderRow/Balances/CoinPill"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="CoinIcon" type="Label" parent="Root/Header/HeaderMargin/HeaderRow/Balances/CoinPill/CoinRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "🪙"
+
+[node name="CoinLabel" type="Label" parent="Root/Header/HeaderMargin/HeaderRow/Balances/CoinPill/CoinRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "0"
+vertical_alignment = 1
+
+[node name="GemPill" type="PanelContainer" parent="Root/Header/HeaderMargin/HeaderRow/Balances"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="GemRow" type="HBoxContainer" parent="Root/Header/HeaderMargin/HeaderRow/Balances/GemPill"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="GemIcon" type="Label" parent="Root/Header/HeaderMargin/HeaderRow/Balances/GemPill/GemRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "💎"
+
+[node name="GemLabel" type="Label" parent="Root/Header/HeaderMargin/HeaderRow/Balances/GemPill/GemRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+text = "0"
+vertical_alignment = 1
+
+[node name="TitleLabel" type="Label" parent="Root/Header/HeaderMargin/HeaderRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 42
+text = "SHOP"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="Root/Header/HeaderMargin/HeaderRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+focus_mode = 0
+text = "✕"
+
+[node name="StatusLabel" type="Label" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = ""
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Scroll" type="ScrollContainer" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 1
+
+[node name="OfferPad" type="MarginContainer" parent="Root/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="OfferList" type="VBoxContainer" parent="Root/Scroll/OfferPad"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 14
+
+[node name="ConfirmDim" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+z_index = 20
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.02, 0.05, 0.12, 0.72)
+
+[node name="ConfirmPanel" type="PanelContainer" parent="ConfirmDim"]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 8
@@ -30,148 +174,58 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -320.0
-offset_top = -360.0
-offset_right = 320.0
-offset_bottom = 360.0
+offset_left = -170.0
+offset_top = -160.0
+offset_right = 170.0
+offset_bottom = 160.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Margin" type="MarginContainer" parent="Panel"]
+[node name="ConfirmMargin" type="MarginContainer" parent="ConfirmDim/ConfirmPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 22
-theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 22
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 16
 
-[node name="VBox" type="VBoxContainer" parent="Panel/Margin"]
+[node name="ConfirmVBox" type="VBoxContainer" parent="ConfirmDim/ConfirmPanel/ConfirmMargin"]
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 12
 
-[node name="TitleLabel" type="Label" parent="Panel/Margin/VBox"]
+[node name="ConfirmTitle" type="Label" parent="ConfirmDim/ConfirmPanel/ConfirmMargin/ConfirmVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 40
-text = "SHOP"
+theme_override_font_sizes/font_size = 26
+text = "Confirm Purchase"
 horizontal_alignment = 1
+autowrap_mode = 3
 
-[node name="SubtitleLabel" type="Label" parent="Panel/Margin/VBox"]
+[node name="ConfirmBody" type="Label" parent="ConfirmDim/ConfirmPanel/ConfirmMargin/ConfirmVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "Coin packs & boosters coming soon"
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 18
+text = ""
 horizontal_alignment = 1
+autowrap_mode = 3
 
-[node name="OfferRow" type="HBoxContainer" parent="Panel/Margin/VBox"]
-unique_name_in_owner = true
+[node name="ConfirmButtons" type="HBoxContainer" parent="ConfirmDim/ConfirmPanel/ConfirmMargin/ConfirmVBox"]
 layout_mode = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 12
 alignment = 1
 
-[node name="OfferCoins" type="PanelContainer" parent="Panel/Margin/VBox/OfferRow"]
+[node name="ConfirmCancel" type="Button" parent="ConfirmDim/ConfirmPanel/ConfirmMargin/ConfirmVBox/ConfirmButtons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 54)
 layout_mode = 2
 size_flags_horizontal = 3
+focus_mode = 0
+text = "Cancel"
 
-[node name="OfferCoinsMargin" type="MarginContainer" parent="Panel/Margin/VBox/OfferRow/OfferCoins"]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 14
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 14
-
-[node name="OfferCoinsVBox" type="VBoxContainer" parent="Panel/Margin/VBox/OfferRow/OfferCoins/OfferCoinsMargin"]
-layout_mode = 2
-theme_override_constants/separation = 6
-alignment = 1
-
-[node name="Icon" type="Label" parent="Panel/Margin/VBox/OfferRow/OfferCoins/OfferCoinsMargin/OfferCoinsVBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 42
-text = "🪙"
-horizontal_alignment = 1
-
-[node name="Name" type="Label" parent="Panel/Margin/VBox/OfferRow/OfferCoins/OfferCoinsMargin/OfferCoinsVBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "500 Coins"
-horizontal_alignment = 1
-
-[node name="Price" type="Label" parent="Panel/Margin/VBox/OfferRow/OfferCoins/OfferCoinsMargin/OfferCoinsVBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "Soon"
-horizontal_alignment = 1
-
-[node name="OfferBoost" type="PanelContainer" parent="Panel/Margin/VBox/OfferRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="OfferBoostMargin" type="MarginContainer" parent="Panel/Margin/VBox/OfferRow/OfferBoost"]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 14
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 14
-
-[node name="OfferBoostVBox" type="VBoxContainer" parent="Panel/Margin/VBox/OfferRow/OfferBoost/OfferBoostMargin"]
-layout_mode = 2
-theme_override_constants/separation = 6
-alignment = 1
-
-[node name="Icon" type="Label" parent="Panel/Margin/VBox/OfferRow/OfferBoost/OfferBoostMargin/OfferBoostVBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 42
-text = "⚡"
-horizontal_alignment = 1
-
-[node name="Name" type="Label" parent="Panel/Margin/VBox/OfferRow/OfferBoost/OfferBoostMargin/OfferBoostVBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "Booster Pack"
-horizontal_alignment = 1
-
-[node name="Price" type="Label" parent="Panel/Margin/VBox/OfferRow/OfferBoost/OfferBoostMargin/OfferBoostVBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "Soon"
-horizontal_alignment = 1
-
-[node name="OfferLives" type="PanelContainer" parent="Panel/Margin/VBox/OfferRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="OfferLivesMargin" type="MarginContainer" parent="Panel/Margin/VBox/OfferRow/OfferLives"]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 14
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 14
-
-[node name="OfferLivesVBox" type="VBoxContainer" parent="Panel/Margin/VBox/OfferRow/OfferLives/OfferLivesMargin"]
-layout_mode = 2
-theme_override_constants/separation = 6
-alignment = 1
-
-[node name="Icon" type="Label" parent="Panel/Margin/VBox/OfferRow/OfferLives/OfferLivesMargin/OfferLivesVBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 42
-text = "❤️"
-horizontal_alignment = 1
-
-[node name="Name" type="Label" parent="Panel/Margin/VBox/OfferRow/OfferLives/OfferLivesMargin/OfferLivesVBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "Refill Lives"
-horizontal_alignment = 1
-
-[node name="Price" type="Label" parent="Panel/Margin/VBox/OfferRow/OfferLives/OfferLivesMargin/OfferLivesVBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "Soon"
-horizontal_alignment = 1
-
-[node name="CloseButton" type="Button" parent="Panel/Margin/VBox"]
+[node name="ConfirmBuy" type="Button" parent="ConfirmDim/ConfirmPanel/ConfirmMargin/ConfirmVBox/ConfirmButtons"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 64)
+custom_minimum_size = Vector2(120, 54)
 layout_mode = 2
-text = "CLOSE"
+size_flags_horizontal = 3
+focus_mode = 0
+text = "Buy"

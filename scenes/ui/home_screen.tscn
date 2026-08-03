@@ -282,6 +282,7 @@ text = "LEVEL 1"
 
 [node name="BottomNav" type="PanelContainer" parent="."]
 unique_name_in_owner = true
+z_index = 80
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0

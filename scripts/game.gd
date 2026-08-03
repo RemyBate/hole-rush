@@ -158,7 +158,7 @@ func _on_food_collected(food: Food) -> void:
 	GameSettings.play_item_collect_sfx(is_target)
 
 	if food.catalog_entry != null:
-		GameSettings.mark_fruit_discovered(food.catalog_entry.image_id)
+		GameSettings.mark_collectible_discovered(food.catalog_entry.catalog_key())
 	if is_target:
 		GameSettings.register_mission_item_collected()
 

@@ -14,6 +14,7 @@ const META_GOAL_XP: int = 800
 signal settings_changed
 signal progress_saved
 signal profile_changed
+signal collectible_discovered(catalog_key: String)
 
 var music_enabled: bool = true
 var sound_enabled: bool = true
@@ -39,10 +40,18 @@ var booster_double_coins: int = 3
 
 ## Persistent collection / trophy stats (additive; never resets existing progress).
 var discovered_fruit_ids: Array = []
+## Stable keys e.g. "fruits:4" — preferred discovery store (migrates from discovered_fruit_ids).
+var discovered_collectibles: Array = []
+var claimed_collection_rewards: Array = []
+## Optional swallow counts by catalog key.
+var collected_count_by_id: Dictionary = {}
 var levels_won: int = 0
 var lifetime_coins: int = 0
 var three_star_wins: int = 0
 var mission_items_collected: int = 0
+var daily_offer_claimed_ymd: String = ""
+var local_player_name: String = ""
+var claimed_trophy_rewards: Array = []
 
 var _music_player: AudioStreamPlayer
 var _sfx_player: AudioStreamPlayer
@@ -164,10 +173,34 @@ func load_progress() -> void:
 	booster_magnet = maxi(0, int(data.get("booster_magnet", 3)))
 	booster_double_coins = maxi(0, int(data.get("booster_double_coins", 3)))
 	discovered_fruit_ids = _load_int_array(data.get("discovered_fruit_ids", []))
+	discovered_collectibles = _load_string_array(data.get("discovered_collectibles", []))
+	claimed_collection_rewards = _load_string_array(data.get("claimed_collection_rewards", []))
+	collected_count_by_id = {}
+	var counts_raw: Variant = data.get("collected_count_by_id", {})
+	if counts_raw is Dictionary:
+		for k in counts_raw.keys():
+			collected_count_by_id[str(k)] = maxi(0, int(counts_raw[k]))
+	# Migrate legacy fruit IDs → catalog keys without wiping progress.
+	for fid in discovered_fruit_ids:
+		var key := "fruits:%d" % int(fid)
+		if not discovered_collectibles.has(key):
+			discovered_collectibles.append(key)
+	for key in discovered_collectibles:
+		var parts := str(key).split(":")
+		if parts.size() == 2 and parts[0] == "fruits":
+			var id := int(parts[1])
+			if id > 0 and not discovered_fruit_ids.has(id):
+				discovered_fruit_ids.append(id)
+	discovered_fruit_ids.sort()
 	levels_won = maxi(0, int(data.get("levels_won", maxi(0, highest_unlocked_level - 1))))
 	lifetime_coins = maxi(0, int(data.get("lifetime_coins", total_coins)))
 	three_star_wins = maxi(0, int(data.get("three_star_wins", 0)))
 	mission_items_collected = maxi(0, int(data.get("mission_items_collected", 0)))
+	daily_offer_claimed_ymd = str(data.get("daily_offer_claimed_ymd", ""))
+	local_player_name = str(data.get("local_player_name", ""))
+	claimed_trophy_rewards = _load_string_array(data.get("claimed_trophy_rewards", []))
+	if local_player_name.strip_edges() == "":
+		local_player_name = _generate_local_player_name()
 	tick_lives_regen()
 
 
@@ -180,6 +213,17 @@ func _load_int_array(raw: Variant) -> Array:
 		if id > 0 and not out.has(id):
 			out.append(id)
 	out.sort()
+	return out
+
+
+func _load_string_array(raw: Variant) -> Array:
+	var out: Array = []
+	if typeof(raw) != TYPE_ARRAY:
+		return out
+	for v in raw:
+		var s := str(v).strip_edges()
+		if s != "" and not out.has(s):
+			out.append(s)
 	return out
 
 
@@ -297,6 +341,17 @@ func spend_gems(amount: int) -> bool:
 	return true
 
 
+func add_coins(amount: int, count_lifetime: bool = true) -> void:
+	amount = maxi(0, amount)
+	if amount <= 0:
+		return
+	total_coins += amount
+	if count_lifetime:
+		lifetime_coins += amount
+	_write_progress_file(0)
+	profile_changed.emit()
+
+
 func refill_one_life() -> bool:
 	tick_lives_regen()
 	if lives >= MAX_LIVES:
@@ -309,15 +364,182 @@ func refill_one_life() -> bool:
 	return true
 
 
+func add_lives(amount: int) -> int:
+	tick_lives_regen()
+	amount = maxi(0, amount)
+	var before := lives
+	lives = mini(MAX_LIVES, lives + amount)
+	if lives >= MAX_LIVES:
+		lives_regen_at = 0
+	elif lives > before and lives_regen_at <= 0:
+		lives_regen_at = int(Time.get_unix_time_from_system()) + LIFE_REGEN_SECONDS
+	var gained := lives - before
+	if gained > 0:
+		_write_progress_file(0)
+		profile_changed.emit()
+	return gained
+
+
+func today_ymd() -> String:
+	var dt := Time.get_datetime_dict_from_system()
+	return "%04d-%02d-%02d" % [int(dt.get("year", 2026)), int(dt.get("month", 1)), int(dt.get("day", 1))]
+
+
+func can_claim_daily_offer() -> bool:
+	return daily_offer_claimed_ymd != today_ymd()
+
+
+func claim_daily_offer() -> bool:
+	if not can_claim_daily_offer():
+		return false
+	daily_offer_claimed_ymd = today_ymd()
+	_write_progress_file(0)
+	profile_changed.emit()
+	return true
+
+
 func is_fruit_discovered(image_id: int) -> bool:
-	return discovered_fruit_ids.has(image_id)
+	return is_collectible_discovered("fruits:%d" % image_id)
+
+
+func is_collectible_discovered(catalog_key: String) -> bool:
+	catalog_key = catalog_key.strip_edges()
+	if catalog_key == "":
+		return false
+	if discovered_collectibles.has(catalog_key):
+		return true
+	# Legacy fallback for fruit IDs.
+	var parts := catalog_key.split(":")
+	if parts.size() == 2 and parts[0] == "fruits":
+		return discovered_fruit_ids.has(int(parts[1]))
+	return false
 
 
 func mark_fruit_discovered(image_id: int) -> bool:
-	if image_id <= 0 or discovered_fruit_ids.has(image_id):
+	return mark_collectible_discovered("fruits:%d" % image_id)
+
+
+func mark_collectible_discovered(catalog_key: String) -> bool:
+	catalog_key = catalog_key.strip_edges()
+	if catalog_key == "":
 		return false
-	discovered_fruit_ids.append(image_id)
-	discovered_fruit_ids.sort()
+	var is_new := not discovered_collectibles.has(catalog_key)
+	if not is_new:
+		collected_count_by_id[catalog_key] = int(collected_count_by_id.get(catalog_key, 1)) + 1
+		_write_progress_file(0)
+		return false
+	discovered_collectibles.append(catalog_key)
+	collected_count_by_id[catalog_key] = maxi(1, int(collected_count_by_id.get(catalog_key, 0)) + 1)
+	var parts := catalog_key.split(":")
+	if parts.size() == 2 and parts[0] == "fruits":
+		var id := int(parts[1])
+		if id > 0 and not discovered_fruit_ids.has(id):
+			discovered_fruit_ids.append(id)
+			discovered_fruit_ids.sort()
+	_write_progress_file(0)
+	profile_changed.emit()
+	collectible_discovered.emit(catalog_key)
+	return true
+
+
+func discovered_collectible_count() -> int:
+	return discovered_collectibles.size()
+
+
+func collection_reward_definitions(total_available: int = -1) -> Array:
+	var discovered := discovered_collectible_count()
+	var total := total_available
+	if total < 0:
+		ItemCatalog.ensure_loaded(ItemCatalog.CATEGORY_FRUITS)
+		total = ItemCatalog.valid_entries(ItemCatalog.CATEGORY_FRUITS).size()
+	var defs: Array = [
+		{
+			"id": "col_5",
+			"icon": "🌱",
+			"title": "First Finds",
+			"requirement": "Discover 5 collectibles",
+			"target": 5,
+			"reward_label": "50 coins",
+			"reward_coins": 50,
+		},
+		{
+			"id": "col_10",
+			"icon": "🧺",
+			"title": "Growing Shelf",
+			"requirement": "Discover 10 collectibles",
+			"target": 10,
+			"reward_label": "Magnet ×1",
+			"reward_booster": BoosterData.Id.MAGNET,
+			"reward_booster_amount": 1,
+		},
+		{
+			"id": "col_15",
+			"icon": "⭐",
+			"title": "Half Way",
+			"requirement": "Discover 15 collectibles",
+			"target": 15,
+			"reward_label": "100 coins + Freeze",
+			"reward_coins": 100,
+			"reward_booster": BoosterData.Id.FREEZE_TIME,
+			"reward_booster_amount": 1,
+		},
+		{
+			"id": "col_20",
+			"icon": "🎁",
+			"title": "Almost Full",
+			"requirement": "Discover 20 collectibles",
+			"target": 20,
+			"reward_label": "3 gems",
+			"reward_gems": 3,
+		},
+		{
+			"id": "col_all",
+			"icon": "🏆",
+			"title": "Full Collection",
+			"requirement": "Discover all collectibles",
+			"target": maxi(1, total),
+			"reward_label": "200 coins + Lightning",
+			"reward_coins": 200,
+			"reward_booster": BoosterData.Id.LIGHTNING,
+			"reward_booster_amount": 1,
+		},
+	]
+	for d in defs:
+		var id := str(d.get("id", ""))
+		var t := maxi(1, int(d.get("target", 1)))
+		var claimed := claimed_collection_rewards.has(id)
+		d["progress"] = discovered
+		d["unlocked"] = discovered >= t
+		d["claimed"] = claimed
+		d["claimable"] = (discovered >= t) and not claimed
+	return defs
+
+
+func claim_collection_reward(reward_id: String) -> bool:
+	reward_id = reward_id.strip_edges()
+	if reward_id == "" or claimed_collection_rewards.has(reward_id):
+		return false
+	ItemCatalog.ensure_loaded(ItemCatalog.CATEGORY_FRUITS)
+	var total := ItemCatalog.valid_entries(ItemCatalog.CATEGORY_FRUITS).size()
+	var found: Dictionary = {}
+	for def in collection_reward_definitions(total):
+		if str(def.get("id", "")) == reward_id:
+			found = def
+			break
+	if found.is_empty() or not bool(found.get("claimable", false)):
+		return false
+	var coins := int(found.get("reward_coins", 0))
+	var gems := int(found.get("reward_gems", 0))
+	var lives_n := int(found.get("reward_lives", 0))
+	if coins > 0:
+		add_coins(coins)
+	if gems > 0:
+		total_gems += gems
+	if lives_n > 0:
+		add_lives(lives_n)
+	if found.has("reward_booster"):
+		add_booster(int(found.get("reward_booster", 0)), int(found.get("reward_booster_amount", 1)))
+	claimed_collection_rewards.append(reward_id)
 	_write_progress_file(0)
 	profile_changed.emit()
 	return true
@@ -341,13 +563,183 @@ func trophy_definitions() -> Array:
 		{"id": "score_1000", "icon": "🏅", "title": "High Scorer", "requirement": "Best score 1,000+", "progress": best_score, "target": 1000},
 		{"id": "three_star", "icon": "✨", "title": "Perfect Timing", "requirement": "Win with 3 stars once", "progress": three_star_wins, "target": 1},
 		{"id": "missions_50", "icon": "🎯", "title": "Mission Hunter", "requirement": "Collect 50 mission items", "progress": mission_items_collected, "target": 50},
-		{"id": "collection_5", "icon": "🖼️", "title": "Collector", "requirement": "Discover 5 fruit images", "progress": discovered_fruit_ids.size(), "target": 5},
+		{"id": "collection_5", "icon": "🖼️", "title": "Collector", "requirement": "Discover 5 fruit images", "progress": discovered_collectible_count(), "target": 5},
 	]
 	for d in defs:
 		var p := int(d.get("progress", 0))
 		var t := maxi(1, int(d.get("target", 1)))
 		d["unlocked"] = p >= t
 	return defs
+
+
+func completed_level_count() -> int:
+	return maxi(levels_won, maxi(0, highest_unlocked_level - 1))
+
+
+## Composite local Trophy Score from real save fields only.
+func compute_trophy_score() -> int:
+	var completed := completed_level_count()
+	var score := completed * 12
+	score += levels_won * 8
+	score += three_star_wins * 30
+	score += mini(best_score / 20, 200)
+	score += mini(lifetime_coins / 25, 150)
+	score += mini(mission_items_collected, 100)
+	score += discovered_collectible_count() * 8
+	for def in trophy_definitions():
+		if bool(def.get("unlocked", false)):
+			score += 20
+	return maxi(0, score)
+
+
+func get_player_display_name() -> String:
+	if local_player_name.strip_edges() == "":
+		local_player_name = _generate_local_player_name()
+		_write_progress_file(0)
+	return local_player_name
+
+
+func _generate_local_player_name() -> String:
+	var seed_n: int = abs(int(hash(str(Time.get_unix_time_from_system()) + str(best_score) + str(levels_won))))
+	return "Player%d" % (1000 + seed_n % 9000)
+
+
+func weekly_rank_seed() -> int:
+	var dt := Time.get_datetime_dict_from_system()
+	var year := int(dt.get("year", 2026))
+	var month := int(dt.get("month", 1))
+	var day := int(dt.get("day", 1))
+	return year * 100 + (month - 1) * 5 + int((day - 1) / 7)
+
+
+func trophy_reward_definitions() -> Array:
+	var score := compute_trophy_score()
+	var completed := completed_level_count()
+	var defs: Array = [
+		{
+			"id": "reward_score_100",
+			"icon": "🏆",
+			"title": "Score 100",
+			"requirement": "Reach Trophy Score 100",
+			"progress": score,
+			"target": 100,
+			"reward_label": "50 coins",
+			"reward_coins": 50,
+		},
+		{
+			"id": "reward_score_500",
+			"icon": "🥇",
+			"title": "Score 500",
+			"requirement": "Reach Trophy Score 500",
+			"progress": score,
+			"target": 500,
+			"reward_label": "120 coins + Magnet",
+			"reward_coins": 120,
+			"reward_booster": BoosterData.Id.MAGNET,
+			"reward_booster_amount": 1,
+		},
+		{
+			"id": "reward_score_1000",
+			"icon": "💎",
+			"title": "Score 1,000",
+			"requirement": "Reach Trophy Score 1,000",
+			"progress": score,
+			"target": 1000,
+			"reward_label": "5 gems",
+			"reward_gems": 5,
+		},
+		{
+			"id": "reward_levels_10",
+			"icon": "🔟",
+			"title": "10 Clears",
+			"requirement": "Complete 10 levels",
+			"progress": completed,
+			"target": 10,
+			"reward_label": "Freeze ×1",
+			"reward_booster": BoosterData.Id.FREEZE_TIME,
+			"reward_booster_amount": 1,
+		},
+		{
+			"id": "reward_levels_25",
+			"icon": "🌟",
+			"title": "25 Clears",
+			"requirement": "Complete 25 levels",
+			"progress": completed,
+			"target": 25,
+			"reward_label": "200 coins",
+			"reward_coins": 200,
+		},
+		{
+			"id": "reward_wins_5",
+			"icon": "🏁",
+			"title": "5 Wins",
+			"requirement": "Win 5 times",
+			"progress": levels_won,
+			"target": 5,
+			"reward_label": "Lightning ×1",
+			"reward_booster": BoosterData.Id.LIGHTNING,
+			"reward_booster_amount": 1,
+		},
+		{
+			"id": "reward_wins_20",
+			"icon": "🏅",
+			"title": "20 Wins",
+			"requirement": "Win 20 times",
+			"progress": levels_won,
+			"target": 20,
+			"reward_label": "1 gem + Double Coins",
+			"reward_gems": 1,
+			"reward_booster": BoosterData.Id.DOUBLE_COINS,
+			"reward_booster_amount": 1,
+		},
+		{
+			"id": "reward_stars_1",
+			"icon": "✨",
+			"title": "Perfect Clear",
+			"requirement": "Earn a 3-star win",
+			"progress": three_star_wins,
+			"target": 1,
+			"reward_label": "+1 life",
+			"reward_lives": 1,
+		},
+	]
+	for d in defs:
+		var id := str(d.get("id", ""))
+		var p := int(d.get("progress", 0))
+		var t := maxi(1, int(d.get("target", 1)))
+		var claimed := claimed_trophy_rewards.has(id)
+		d["unlocked"] = p >= t
+		d["claimed"] = claimed
+		d["claimable"] = (p >= t) and not claimed
+	return defs
+
+
+func claim_trophy_reward(reward_id: String) -> bool:
+	reward_id = reward_id.strip_edges()
+	if reward_id == "" or claimed_trophy_rewards.has(reward_id):
+		return false
+	var found: Dictionary = {}
+	for def in trophy_reward_definitions():
+		if str(def.get("id", "")) == reward_id:
+			found = def
+			break
+	if found.is_empty() or not bool(found.get("claimable", false)):
+		return false
+	var coins := int(found.get("reward_coins", 0))
+	var gems := int(found.get("reward_gems", 0))
+	var lives_n := int(found.get("reward_lives", 0))
+	if coins > 0:
+		add_coins(coins)
+	if gems > 0:
+		total_gems += gems
+	if lives_n > 0:
+		add_lives(lives_n)
+	if found.has("reward_booster"):
+		add_booster(int(found.get("reward_booster", 0)), int(found.get("reward_booster_amount", 1)))
+	claimed_trophy_rewards.append(reward_id)
+	_write_progress_file(0)
+	profile_changed.emit()
+	return true
 
 
 func meta_progress_text() -> String:
@@ -431,10 +823,16 @@ func _write_progress_file(collected: int) -> void:
 		"booster_magnet": booster_magnet,
 		"booster_double_coins": booster_double_coins,
 		"discovered_fruit_ids": discovered_fruit_ids,
+		"discovered_collectibles": discovered_collectibles,
+		"claimed_collection_rewards": claimed_collection_rewards,
+		"collected_count_by_id": collected_count_by_id,
 		"levels_won": levels_won,
 		"lifetime_coins": lifetime_coins,
 		"three_star_wins": three_star_wins,
 		"mission_items_collected": mission_items_collected,
+		"daily_offer_claimed_ymd": daily_offer_claimed_ymd,
+		"local_player_name": local_player_name,
+		"claimed_trophy_rewards": claimed_trophy_rewards,
 		"saved_at": Time.get_unix_time_from_system(),
 	}
 	var file := FileAccess.open(PROGRESS_PATH, FileAccess.WRITE)

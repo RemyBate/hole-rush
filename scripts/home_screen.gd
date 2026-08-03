@@ -5,9 +5,9 @@ signal play_level(level: int, boosters: Array)
 
 const SettingsPopupScene: PackedScene = preload("res://scenes/ui/settings_popup.tscn")
 const ShopScreenScene: PackedScene = preload("res://scenes/ui/shop_screen.tscn")
-const MapPopupScene: PackedScene = preload("res://scenes/ui/map_popup.tscn")
-const TrophyPopupScene: PackedScene = preload("res://scenes/ui/trophy_popup.tscn")
-const CollectionPopupScene: PackedScene = preload("res://scenes/ui/collection_popup.tscn")
+const MapScreenScene: PackedScene = preload("res://scenes/ui/map_screen.tscn")
+const TrophyScreenScene: PackedScene = preload("res://scenes/ui/trophy_screen.tscn")
+const CollectionScreenScene: PackedScene = preload("res://scenes/ui/collection_screen.tscn")
 const EventPopupScene: PackedScene = preload("res://scenes/ui/event_popup.tscn")
 const GoldCoinIconScript: Script = preload("res://scripts/gold_coin_icon.gd")
 
@@ -454,12 +454,21 @@ func _event_id_for_title(title: String) -> String:
 func _close_home_popups() -> void:
 	if _shop_screen and _shop_screen.visible and _shop_screen.has_method("close_shop"):
 		_shop_screen.close_shop()
-	if _map_popup and _map_popup.visible and _map_popup.has_method("close_modal"):
-		_map_popup.close_modal()
-	if _trophy_popup and _trophy_popup.visible and _trophy_popup.has_method("close_modal"):
-		_trophy_popup.close_modal()
-	if _collection_popup and _collection_popup.visible and _collection_popup.has_method("close_modal"):
-		_collection_popup.close_modal()
+	if _map_popup and _map_popup.visible:
+		if _map_popup.has_method("close_map"):
+			_map_popup.close_map()
+		elif _map_popup.has_method("close_modal"):
+			_map_popup.close_modal()
+	if _trophy_popup and _trophy_popup.visible:
+		if _trophy_popup.has_method("close_trophies"):
+			_trophy_popup.close_trophies()
+		elif _trophy_popup.has_method("close_modal"):
+			_trophy_popup.close_modal()
+	if _collection_popup and _collection_popup.visible:
+		if _collection_popup.has_method("close_collection"):
+			_collection_popup.close_collection()
+		elif _collection_popup.has_method("close_modal"):
+			_collection_popup.close_modal()
 	if _event_popup and _event_popup.visible and _event_popup.has_method("close_modal"):
 		_event_popup.close_modal()
 
@@ -470,23 +479,41 @@ func _setup_shop() -> void:
 		push_error("HomeScreen: failed to instantiate shop screen.")
 		return
 	add_child(shop)
-	shop.z_index = 75
+	# Below BottomNav so Shop tab / other tabs stay visible and tappable.
+	shop.z_index = 70
+	if shop.has_signal("closed"):
+		shop.closed.connect(func() -> void: _highlight_nav(2))
 	_shop_screen = shop
+	if _bottom_nav:
+		_bottom_nav.z_index = 80
 
 
 func _setup_feature_popups() -> void:
-	_map_popup = MapPopupScene.instantiate()
+	_map_popup = MapScreenScene.instantiate()
 	add_child(_map_popup)
-	_map_popup.z_index = 72
+	# Below BottomNav; same layer family as Shop.
+	_map_popup.z_index = 70
 	_map_popup.level_selected.connect(_on_map_level_selected)
+	if _map_popup.has_signal("closed"):
+		_map_popup.closed.connect(func() -> void: _highlight_nav(2))
+	if _bottom_nav:
+		_bottom_nav.z_index = 80
 
-	_trophy_popup = TrophyPopupScene.instantiate()
+	_trophy_popup = TrophyScreenScene.instantiate()
 	add_child(_trophy_popup)
-	_trophy_popup.z_index = 72
+	_trophy_popup.z_index = 70
+	if _trophy_popup.has_signal("closed"):
+		_trophy_popup.closed.connect(func() -> void: _highlight_nav(2))
+	if _bottom_nav:
+		_bottom_nav.z_index = 80
 
-	_collection_popup = CollectionPopupScene.instantiate()
+	_collection_popup = CollectionScreenScene.instantiate()
 	add_child(_collection_popup)
-	_collection_popup.z_index = 72
+	_collection_popup.z_index = 70
+	if _collection_popup.has_signal("closed"):
+		_collection_popup.closed.connect(func() -> void: _highlight_nav(2))
+	if _bottom_nav:
+		_bottom_nav.z_index = 80
 
 	_event_popup = EventPopupScene.instantiate()
 	add_child(_event_popup)

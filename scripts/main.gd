@@ -3,17 +3,25 @@ extends Node
 const HomeScene: PackedScene = preload("res://scenes/ui/home_screen.tscn")
 const GameScene: PackedScene = preload("res://scenes/game.tscn")
 const SceneTransitionScript: Script = preload("res://scripts/scene_transition.gd")
+const CollectionToastScene: PackedScene = preload("res://scenes/ui/collection_toast.tscn")
 
 var _home: HomeScreen = null
 var _game: Node2D = null
 var _transition: CanvasLayer = null
+var _collection_toast: CanvasLayer = null
 
 
 func _ready() -> void:
 	_setup_transition()
+	_setup_collection_toast()
 	_show_home_with_reward({})
 	await get_tree().process_frame
 	_fade_in(0.42)
+
+
+func _setup_collection_toast() -> void:
+	_collection_toast = CollectionToastScene.instantiate()
+	add_child(_collection_toast)
 
 
 func _setup_transition() -> void:

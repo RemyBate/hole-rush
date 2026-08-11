@@ -122,31 +122,26 @@ static func build_mixed_level(spawner: FoodSpawner, origin: Vector2, plan: Level
 
 	print("[LevelLayout] mixed L", plan.level, " patterns=", pattern_names, " ", plan.summary())
 
-
 static func _ensure_mixed_target_counts(
 	spawner: FoodSpawner,
 	origin: Vector2,
 	plan: LevelPlan,
 	_target_map: Dictionary
 ) -> void:
-	var zones: Array[Vector2] = [
-		origin + Vector2(900.0, 1100.0),
-		origin + Vector2(2300.0, 1100.0),
-		origin + Vector2(1600.0, 2300.0),
-	]
-	var zi := 0
 	for t in plan.targets:
 		var entry: ItemEntry = t.get("entry")
 		if entry == null:
 			continue
-		var need := int(t.get("target", 10)) + int(t.get("margin", 2))
+		var need := int(t.get("target", 10))
 		var have := spawner.count_catalog_key(entry.catalog_key())
-		var deficit := need - have
-		if deficit > 0:
-			spawner.spawn_catalog_scatter(
-				zones[zi % zones.size()], deficit, 140.0, entry, 900 + zi, true
+		if have < need:
+			spawner.ensure_catalog_count(entry, need, origin, true)
+		have = spawner.count_catalog_key(entry.catalog_key())
+		if have < need:
+			push_error(
+				"[LevelLayout] L%d cannot satisfy %s need=%d have=%d"
+				% [plan.level, entry.catalog_key(), need, have]
 			)
-		zi += 1
 
 
 static func _mixed_spawn_count(entry: ItemEntry, target_map: Dictionary, is_target: bool) -> int:

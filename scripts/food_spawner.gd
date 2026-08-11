@@ -186,7 +186,7 @@ func spawn_catalog_scatter(
 	entry: ItemEntry,
 	seed_offset: int = 0,
 	mission_highlight: bool = false
-) -> void:
+) -> int:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = int(center.x + center.y + entry.image_id + seed_offset + _level)
 	var placed := 0
@@ -199,6 +199,118 @@ func spawn_catalog_scatter(
 		)
 		if _try_spawn_catalog(center + offset, entry, mission_highlight):
 			placed += 1
+	return placed
+
+
+## Guarantee at least [min_count] instances of a catalog item (mission-critical fill).
+func ensure_catalog_count(
+	entry: ItemEntry,
+	min_count: int,
+	origin: Vector2,
+	mission_highlight: bool = true
+) -> int:
+	if entry == null or min_count <= 0:
+		return 0
+	var key := entry.catalog_key()
+	var have := count_catalog_key(key)
+	if have >= min_count:
+		return have
+
+	var zones: Array[Vector2] = [
+		origin + Vector2(900.0, 1100.0),
+		origin + Vector2(2300.0, 1100.0),
+		origin + Vector2(1600.0, 2300.0),
+		origin + Vector2(700.0, 2020.0),
+		origin + Vector2(2500.0, 2020.0),
+		origin + Vector2(1100.0, 980.0),
+		origin + Vector2(2100.0, 980.0),
+		origin + Vector2(1600.0, 700.0),
+	]
+
+	var rng := RandomNumberGenerator.new()
+	rng.seed = _level * 104729 + entry.image_id * 7919
+
+	# Phase 1: widening scatter in multiple zones.
+	for spread in [120.0, 180.0, 260.0, 340.0, 420.0]:
+		for zi in zones.size():
+			have = count_catalog_key(key)
+			if have >= min_count:
+				return have
+			var deficit := min_count - have
+			spawn_catalog_scatter(zones[zi], deficit, spread, entry, 1000 + zi * 17 + int(spread), mission_highlight)
+			have = count_catalog_key(key)
+			if have >= min_count:
+				return have
+
+	# Phase 2: ring/grid with relaxed spacing for mission fills.
+	for zi in zones.size():
+		have = count_catalog_key(key)
+		if have >= min_count:
+			return have
+		var deficit := min_count - have
+		_fill_catalog_relaxed_ring(zones[zi], deficit, entry, mission_highlight, rng)
+
+	have = count_catalog_key(key)
+	if have >= min_count:
+		return have
+
+	# Phase 3: last-resort grid in open corners (minimal spacing).
+	var corners: Array[Vector2] = [
+		origin + Vector2(520.0, 520.0),
+		origin + Vector2(2680.0, 520.0),
+		origin + Vector2(520.0, 2680.0),
+		origin + Vector2(2680.0, 2680.0),
+	]
+	for corner in corners:
+		have = count_catalog_key(key)
+		if have >= min_count:
+			return have
+		var deficit := min_count - have
+		_fill_catalog_force_grid(corner, deficit, entry, mission_highlight)
+
+	return count_catalog_key(key)
+
+
+func _fill_catalog_relaxed_ring(
+	center: Vector2,
+	count: int,
+	entry: ItemEntry,
+	mission_highlight: bool,
+	rng: RandomNumberGenerator
+) -> void:
+	if count <= 0:
+		return
+	var spacing := entry.visual_radius * 2.2 + LevelLayout.ITEM_GAP * 0.45
+	var ring_r := spacing * 1.35
+	var placed := 0
+	var slot := 0
+	while placed < count and slot < count * 8:
+		var angle := float(slot) / float(maxi(count, 1)) * TAU + rng.randf_range(-0.2, 0.2)
+		var pos := center + Vector2(cos(angle), sin(angle)) * (ring_r + float(slot / 8) * spacing * 0.65)
+		if _try_spawn_catalog(pos, entry, mission_highlight, 0.45):
+			placed += 1
+		slot += 1
+
+
+func _fill_catalog_force_grid(
+	center: Vector2,
+	count: int,
+	entry: ItemEntry,
+	mission_highlight: bool
+) -> void:
+	if count <= 0:
+		return
+	var spacing := entry.visual_radius * 2.0 + 8.0
+	var cols := maxi(3, int(ceil(sqrt(float(count)))))
+	var rows := maxi(2, int(ceil(float(count) / float(cols))))
+	var start := center - Vector2(cols - 1, rows - 1) * spacing * 0.5
+	var placed := 0
+	for row in rows:
+		for col in cols:
+			if placed >= count:
+				return
+			if _try_spawn_catalog(start + Vector2(col, row) * spacing, entry, mission_highlight, 0.35):
+				placed += 1
 
 
 func _try_spawn(
@@ -226,15 +338,22 @@ func _try_spawn(
 	return true
 
 
-func _try_spawn_catalog(pos: Vector2, entry: ItemEntry, mission_highlight: bool) -> bool:
+func _try_spawn_catalog(
+	pos: Vector2,
+	entry: ItemEntry,
+	mission_highlight: bool = false,
+	gap_scale: float = 1.0
+) -> bool:
 	if entry == null or not entry.valid:
 		return false
 	var scale := LevelPlan.visual_scale_for(_level, entry.image_id)
 	var visual_r := entry.visual_radius * scale
 	var pad := visual_r * 0.90
-	if not _is_position_valid(pos, pad):
+	if not _is_position_valid(pos, pad, gap_scale):
 		return false
 	var food: Food = FoodScene.instantiate() as Food
+	if food == null:
+		return false
 	food.setup_catalog(pos, entry, _theme, mission_highlight, scale)
 	food.collected.connect(_on_food_collected)
 	add_child(food)
@@ -244,7 +363,7 @@ func _try_spawn_catalog(pos: Vector2, entry: ItemEntry, mission_highlight: bool)
 	return true
 
 
-func _is_position_valid(pos: Vector2, pad: float) -> bool:
+func _is_position_valid(pos: Vector2, pad: float, gap_scale: float = 1.0) -> bool:
 	if _spawn_bounds.size != Vector2.ZERO:
 		var margin := GameConstants.FOOD_MARGIN + pad
 		if not Rect2(
@@ -254,8 +373,9 @@ func _is_position_valid(pos: Vector2, pad: float) -> bool:
 			return false
 	if pos.distance_to(_hole_start) < START_HOLE_CLEAR_RADIUS + pad:
 		return false
+	var gap := LevelLayout.ITEM_GAP * clampf(gap_scale, 0.25, 1.0)
 	for i in _placed_positions.size():
-		var needed := _placed_padding[i] + pad + LevelLayout.ITEM_GAP
+		var needed := _placed_padding[i] + pad + gap
 		if pos.distance_to(_placed_positions[i]) < needed:
 			return false
 	return true

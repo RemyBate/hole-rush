@@ -201,7 +201,17 @@ func load_progress() -> void:
 	claimed_trophy_rewards = _load_string_array(data.get("claimed_trophy_rewards", []))
 	if local_player_name.strip_edges() == "":
 		local_player_name = _generate_local_player_name()
+	_repair_progress_consistency()
 	tick_lives_regen()
+
+
+func _repair_progress_consistency() -> void:
+	# Keep unlock/progression coherent for saves from older builds — never wipe rewards.
+	current_level = clampi(current_level, 1, LevelTheme.MAX_LEVEL)
+	highest_unlocked_level = clampi(highest_unlocked_level, 1, LevelTheme.MAX_LEVEL)
+	if highest_unlocked_level < current_level:
+		highest_unlocked_level = current_level
+	levels_won = clampi(levels_won, 0, LevelTheme.MAX_LEVEL)
 
 
 func _load_int_array(raw: Variant) -> Array:
@@ -840,6 +850,7 @@ func _write_progress_file(collected: int) -> void:
 		return
 	file.store_string(JSON.stringify(data))
 	file.close()
+	GameDebug.log_save("write", data)
 	progress_saved.emit()
 	profile_changed.emit()
 

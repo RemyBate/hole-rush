@@ -44,6 +44,7 @@ func _ready() -> void:
 	result_panel.hide()
 	pause_overlay.hide()
 	_cache_mission_widgets()
+	_apply_safe_area()
 	_apply_ui_theme()
 	_setup_result_screens()
 	_setup_settings_popup()
@@ -61,7 +62,7 @@ func _cache_mission_widgets() -> void:
 		if tex == null:
 			tex = TextureRect.new()
 			tex.name = "IconTexture"
-			tex.custom_minimum_size = Vector2(104, 104)
+			tex.custom_minimum_size = Vector2(72, 72)
 			tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			tex.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -150,7 +151,7 @@ func update_missions(missions: Array) -> void:
 			_mission_icon_textures[i].modulate = Color.WHITE
 			_mission_icon_textures[i].self_modulate = Color.WHITE
 			_mission_icon_textures[i].texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
-			_mission_icon_textures[i].custom_minimum_size = Vector2(104, 104)
+			_mission_icon_textures[i].custom_minimum_size = Vector2(72, 72)
 		else:
 			_mission_icon_textures[i].hide()
 			_mission_icon_textures[i].texture = null
@@ -227,6 +228,18 @@ func show_bonus_reward_message() -> void:
 
 func _on_game_over_retry() -> void:
 	restart_pressed.emit()
+
+
+func _apply_safe_area() -> void:
+	if top_safe == null:
+		return
+	var margin := DisplayServer.get_display_safe_area()
+	var extra_top := maxi(0, margin.position.y)
+	var extra_left := maxi(0, margin.position.x)
+	var extra_right := maxi(0, int(get_viewport().get_visible_rect().size.x) - margin.end.x)
+	top_safe.add_theme_constant_override("margin_top", 20 + extra_top)
+	top_safe.add_theme_constant_override("margin_left", 20 + extra_left)
+	top_safe.add_theme_constant_override("margin_right", 20 + extra_right)
 
 
 func _apply_ui_theme() -> void:

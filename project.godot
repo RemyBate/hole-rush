@@ -14,7 +14,7 @@ config/name="Hole Rush"
 config/description="Top-down mobile prototype — drag the hole to collect food before time runs out."
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.6", "Mobile")
-config/icon="res://icon.svg"
+config/icon="res://assets/branding/icon_512.png"
 config/boot_splash/bg_color=Color(0.082, 0.22, 0.522, 1)
 config/boot_splash/show_image=true
 config/boot_splash/image="res://assets/branding/splash.png"
@@ -26,6 +26,7 @@ config/boot_splash/minimum_display_time=1000
 
 GameConstants="*res://scripts/game_constants.gd"
 GameSettings="*res://scripts/game_settings.gd"
+GameDebug="*res://scripts/game_debug.gd"
 
 [display]
 
@@ -33,9 +34,12 @@ window/size/viewport_width=720
 window/size/viewport_height=1280
 window/size/window_width_override=405
 window/size/window_height_override=720
+window/size/mode=3
 window/stretch/mode="canvas_items"
-window/stretch/aspect="expand"
+window/stretch/aspect="keep_width"
+window/stretch/scale_mode="fractional"
 window/handheld/orientation=1
+window/dpi/allow_hidpi=false
 
 [input_devices]
 

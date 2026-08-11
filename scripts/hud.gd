@@ -4,6 +4,7 @@ signal restart_pressed
 signal victory_continue_pressed
 signal bonus_reward_pressed
 signal pause_pressed
+signal menu_pressed
 signal save_progress_requested
 signal settings_opened
 signal settings_closed
@@ -23,12 +24,15 @@ signal settings_closed
 @onready var mission_card_2: PanelContainer = %MissionCard2
 @onready var mission_card_3: PanelContainer = %MissionCard3
 @onready var settings_button: Button = %SettingsButton
+@onready var menu_button: Button = %MenuButton
 
+const ConfirmPopupScene: PackedScene = preload("res://scenes/ui/confirm_popup.tscn")
 const SettingsPopupScene: PackedScene = preload("res://scenes/ui/settings_popup.tscn")
 const VictoryScreenScene: PackedScene = preload("res://scenes/ui/victory_screen.tscn")
 const GameOverScreenScene: PackedScene = preload("res://scenes/ui/game_over_screen.tscn")
 
 var _settings_popup: Control = null
+var _leave_confirm: Control = null
 var _victory_screen: VictoryScreen = null
 var _game_over_screen: GameOverScreen = null
 var _max_time: float = GameConstants.GAME_TIME_SECONDS
@@ -48,8 +52,11 @@ func _ready() -> void:
 	_apply_ui_theme()
 	_setup_result_screens()
 	_setup_settings_popup()
+	_setup_leave_confirm()
 	pause_button.pressed.connect(_on_pause_pressed)
 	settings_button.pressed.connect(_on_settings_pressed)
+	if menu_button:
+		menu_button.pressed.connect(_on_menu_pressed)
 
 
 func _cache_mission_widgets() -> void:
@@ -253,6 +260,7 @@ func _apply_ui_theme() -> void:
 	timer_bar.add_theme_stylebox_override("fill", UIStyles.progress_fill_style())
 
 	UIStyles.style_secondary_button(pause_button, 22)
+	UIStyles.style_secondary_button(menu_button, 20)
 	UIStyles.style_gold_button(settings_button, 22)
 	UIStyles.apply_cartoon_label(score_label, 34, 6)
 	UIStyles.apply_cartoon_label(coin_label, 34, 6)
@@ -279,6 +287,37 @@ func _make_panel_style(bg: Color, corner: int = 20) -> StyleBoxFlat:
 
 func _on_pause_pressed() -> void:
 	pause_pressed.emit()
+
+
+func show_leave_confirm() -> void:
+	if _leave_confirm and _leave_confirm.has_method("open_confirm"):
+		_leave_confirm.call(
+			"open_confirm",
+			"Leave Level?",
+			"Leave this level and return to the main menu?",
+			"Leave Level",
+			"Cancel"
+		)
+
+
+func _setup_leave_confirm() -> void:
+	var popup := ConfirmPopupScene.instantiate() as Control
+	if popup == null:
+		push_error("HUD: failed to instantiate leave confirm popup.")
+		return
+	add_child(popup)
+	popup.z_index = 95
+	_leave_confirm = popup
+	if popup.has_signal("confirmed"):
+		popup.confirmed.connect(func(): menu_pressed.emit())
+	if popup.has_signal("cancelled"):
+		popup.cancelled.connect(func(): settings_closed.emit())
+
+
+func _on_menu_pressed() -> void:
+	GameSettings.play_ui_click()
+	settings_opened.emit()
+	show_leave_confirm()
 
 
 func _setup_settings_popup() -> void:

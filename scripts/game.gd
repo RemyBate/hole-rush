@@ -41,6 +41,7 @@ func _ready() -> void:
 	hud.save_progress_requested.connect(_on_save_progress_requested)
 	hud.settings_opened.connect(_on_settings_opened)
 	hud.settings_closed.connect(_on_settings_closed)
+	hud.menu_pressed.connect(_on_leave_to_menu)
 
 
 func begin_level(level: int, boosters: Array) -> void:
@@ -401,3 +402,20 @@ func _on_settings_closed() -> void:
 	_paused = _paused_for_settings
 	hole.set_paused(_paused)
 	hud.set_paused(_paused)
+
+
+func _on_leave_to_menu() -> void:
+	if _state != GameState.PLAYING:
+		return
+	set_process(false)
+	hud.hide_result_screens()
+	exit_to_home.emit({})
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not _started or _state != GameState.PLAYING:
+		return
+	if event.is_action_pressed("ui_cancel"):
+		get_viewport().set_input_as_handled()
+		hud.settings_opened.emit()
+		hud.show_leave_confirm()

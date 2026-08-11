@@ -23,5 +23,5 @@ func add_progress(amount: int = 1) -> void:
 
 func matches_food(food: Food) -> bool:
 	if catalog_key != "":
-		return food.catalog_key == catalog_key
+		return str(food.catalog_key).strip_edges() == str(catalog_key).strip_edges()
 	return int(item_type) == int(food.item_type)

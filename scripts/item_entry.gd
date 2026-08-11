@@ -39,16 +39,25 @@ func visual_diameter() -> float:
 	return visual_radius * 2.0
 
 
-## Runtime atlas of opaque fruit only (does not modify source PNG).
+## Runtime HUD preview — baked ImageTexture for reliable mobile display.
 func hud_texture() -> Texture2D:
 	if texture == null:
 		return null
 	if content_rect.size.x < 4 or content_rect.size.y < 4:
 		return texture
-	var atlas := AtlasTexture.new()
-	atlas.atlas = texture
-	atlas.region = Rect2(content_rect)
-	return atlas
+	var img := texture.get_image()
+	if img == null:
+		return texture
+	if img.get_format() != Image.FORMAT_RGBA8:
+		img = img.duplicate()
+		img.convert(Image.FORMAT_RGBA8)
+	else:
+		img = img.duplicate()
+	var region := content_rect.intersection(Rect2i(0, 0, img.get_width(), img.get_height()))
+	if region.size.x < 4 or region.size.y < 4:
+		return texture
+	var cropped := img.get_region(region)
+	return ImageTexture.create_from_image(cropped)
 
 
 static func radius_for_class(size_class: int) -> float:

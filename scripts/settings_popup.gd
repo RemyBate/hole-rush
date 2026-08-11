@@ -1,6 +1,8 @@
 class_name SettingsPopup
 extends Control
 
+const _SettingsArt := preload("res://scripts/settings_art.gd")
+
 signal opened
 signal closed
 signal save_progress_requested
@@ -152,6 +154,8 @@ func _apply_ui_theme() -> void:
 		(btn.get_theme_stylebox("pressed") as StyleBoxFlat).bg_color = Color(0.18, 0.55, 0.82)
 		UIStyles.bind_button(btn)
 
+	_apply_toggle_icons()
+
 	UIStyles.style_action_button(_support_button, Color(0.18, 0.7, 0.94, 0.98), COLOR_CYAN_HI, 30)
 	UIStyles.style_action_button(_save_button, Color(0.38, 0.78, 0.28, 0.98), COLOR_GREEN_HI, 30)
 
@@ -166,6 +170,39 @@ func _apply_ui_theme() -> void:
 
 	UIStyles.style_action_button(_close_button, Color(0.9, 0.24, 0.3, 0.98), Color(1.0, 0.45, 0.5), 28)
 	UIStyles.bind_button(_notification_switch)
+
+
+func _apply_toggle_icons() -> void:
+	_mount_icon(_music_button, _SettingsArt.Id.MUSIC)
+	_mount_icon(_sound_button, _SettingsArt.Id.SOUND)
+	_mount_icon(_vibration_button, _SettingsArt.Id.VIBRATION)
+
+
+func _mount_icon(btn: Button, id: int) -> void:
+	btn.text = ""
+	var existing := btn.get_node_or_null("Icon") as TextureRect
+	if existing != null:
+		existing.texture = _SettingsArt.icon(id, 80)
+		return
+	var icon := TextureRect.new()
+	icon.name = "Icon"
+	icon.texture = _SettingsArt.icon(id, 80)
+	icon.custom_minimum_size = Vector2(56, 56)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	icon.set_anchors_preset(Control.PRESET_CENTER)
+	icon.anchor_left = 0.5
+	icon.anchor_top = 0.5
+	icon.anchor_right = 0.5
+	icon.anchor_bottom = 0.5
+	icon.offset_left = -28
+	icon.offset_top = -28
+	icon.offset_right = 28
+	icon.offset_bottom = 28
+	btn.add_child(icon)
+	btn.move_child(icon, 0)
 
 
 func _style_cartoon_label(label: Control, font_size: int) -> void:

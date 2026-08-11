@@ -124,7 +124,7 @@ custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 44
-text = "🎵"
+text = ""
 
 [node name="MusicSlash" type="ColorRect" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/ToggleSection/ToggleSectionMargin/ToggleRow/MusicColumn/MusicButton"]
 unique_name_in_owner = true
@@ -176,7 +176,7 @@ custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 44
-text = "🔊"
+text = ""
 
 [node name="SoundSlash" type="ColorRect" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/ToggleSection/ToggleSectionMargin/ToggleRow/SoundColumn/SoundButton"]
 unique_name_in_owner = true
@@ -228,7 +228,7 @@ custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 40
-text = "📳"
+text = ""
 
 [node name="VibrationSlash" type="ColorRect" parent="Panel/OuterMargin/VBox/InnerPanel/InnerMargin/Content/ToggleSection/ToggleSectionMargin/ToggleRow/VibrationColumn/VibrationButton"]
 unique_name_in_owner = true

@@ -59,10 +59,13 @@ static func for_level(level: int, category: String = ItemCatalog.CATEGORY_FRUITS
 	_shuffle(candidates, rng)
 	var chosen: Array = []
 	var used_keys: Dictionary = {}
+	var max_size := _max_target_size_class(level)
 
-	# Prefer mixed size classes when selecting multiple targets.
+	# Prefer mixed size classes when selecting three targets.
 	if want_targets >= 3:
 		for size_want in [ItemEntry.SizeClass.SMALL, ItemEntry.SizeClass.MEDIUM, ItemEntry.SizeClass.LARGE]:
+			if size_want > max_size:
+				continue
 			for e in candidates:
 				var entry := e as ItemEntry
 				if entry == null or used_keys.has(entry.catalog_key()):
@@ -80,8 +83,21 @@ static func for_level(level: int, category: String = ItemCatalog.CATEGORY_FRUITS
 		var entry := e as ItemEntry
 		if entry == null or used_keys.has(entry.catalog_key()):
 			continue
+		if entry.size_class > max_size:
+			continue
 		chosen.append(entry)
 		used_keys[entry.catalog_key()] = true
+
+	# Fallback: relax size cap only if not enough eligible targets.
+	if chosen.size() < want_targets:
+		for e in candidates:
+			if chosen.size() >= want_targets:
+				break
+			var entry := e as ItemEntry
+			if entry == null or used_keys.has(entry.catalog_key()):
+				continue
+			chosen.append(entry)
+			used_keys[entry.catalog_key()] = true
 
 	for entry in chosen:
 		var qty := _target_quantity(entry as ItemEntry, rng)
@@ -94,6 +110,17 @@ static func for_level(level: int, category: String = ItemCatalog.CATEGORY_FRUITS
 		})
 
 	return plan
+
+
+static func _max_target_size_class(level: int) -> int:
+	# Early levels must use swallowable targets with the starting hole radius.
+	if level <= 2:
+		return ItemEntry.SizeClass.SMALL
+	if level <= 5:
+		return ItemEntry.SizeClass.MEDIUM
+	if level <= 10:
+		return ItemEntry.SizeClass.LARGE
+	return ItemEntry.SizeClass.EXTRA_LARGE
 
 
 static func _target_quantity(entry: ItemEntry, rng: RandomNumberGenerator) -> int:

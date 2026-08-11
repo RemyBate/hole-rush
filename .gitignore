@@ -9,6 +9,20 @@
 *.keystore
 build/signing.credentials.txt
 
+# Android / local build outputs
+build/*.aab
+build/*.apk
+build/*.idsig
+build/release_export_log*.txt
+build/export_log*.txt
+
+# Temporary verification artefacts
+tools/icon_mask_verify/
+tools/*_verify.png
+tools/progression_verify.png
+tools/folder_compare_report.txt
+*.gd.uid
+
 # Accidental editor saves — do not commit
 node_2d.tscn
 **/node_2d.tscn

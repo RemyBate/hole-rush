@@ -102,6 +102,9 @@ func _start_match() -> void:
 	hud.update_level_coins(_run_coins)
 	hud.update_missions(_missions)
 
+	GameDebug.log_level_start(_current_level, _missions, plan)
+	GameDebug.log_spawn_counts(food_spawner, _missions)
+
 	# Fruit catalog levels always use the light-green Fruit Garden field
 	# (avoids Fast Food grey checkerboard when save progress is in later themes).
 	var bg_theme := theme
@@ -112,6 +115,7 @@ func _start_match() -> void:
 	currency_spawner.clear_pickups()
 	food_spawner.spawn_level(_play_bounds, theme, _current_level, plan)
 	currency_spawner.spawn_level(_play_bounds, _current_level, food_spawner)
+	_validate_level_spawns(plan)
 
 	var center := _play_bounds.position + _play_bounds.size * 0.5
 	hole.setup(center, _play_bounds)
@@ -213,6 +217,30 @@ func _on_currency_collected(pickup: CurrencyPickup) -> void:
 
 
 ## Accepts a Food (Level 4+ catalog / live collect) or a legacy int slot id (tools / L1–3).
+func _validate_level_spawns(plan: LevelPlan) -> void:
+	if plan == null or plan.is_empty():
+		return
+	for mission in _missions:
+		var m := mission as Mission
+		if m == null or m.catalog_key == "":
+			continue
+		var have := food_spawner.count_catalog_key(m.catalog_key)
+		if have < m.target:
+			var entry: ItemEntry = null
+			for t in plan.targets:
+				if str(t.get("catalog_key", "")) == m.catalog_key:
+					entry = t.get("entry")
+					break
+			if entry != null:
+				food_spawner.ensure_catalog_count(entry, m.target, _play_bounds.position, true)
+				have = food_spawner.count_catalog_key(m.catalog_key)
+		if have < m.target:
+			push_error(
+				"[Game] L%d unwinnable target %s need=%d have=%d"
+				% [_current_level, m.catalog_key, m.target, have]
+			)
+
+
 func _apply_mission_progress(food_or_type: Variant) -> void:
 	for mission in _missions:
 		var m := mission as Mission
@@ -221,6 +249,7 @@ func _apply_mission_progress(food_or_type: Variant) -> void:
 		if food_or_type is Food:
 			if m.matches_food(food_or_type as Food):
 				m.add_progress()
+				GameDebug.log_collect(m.catalog_key, m.progress, m.target)
 		elif typeof(food_or_type) == TYPE_INT or typeof(food_or_type) == TYPE_FLOAT:
 			# Legacy slot match only — never apply raw ints to catalog missions.
 			if m.catalog_key == "" and int(m.item_type) == int(food_or_type):
@@ -276,6 +305,10 @@ func _win_match() -> void:
 	set_process(false)
 	GameSettings.play_win_sfx()
 	_pending_victory = _build_victory_data()
+	GameDebug.log_level_complete(
+		_current_level,
+		mini(_current_level + 1, LevelTheme.MAX_LEVEL)
+	)
 	hud.show_victory(_pending_victory)
 
 

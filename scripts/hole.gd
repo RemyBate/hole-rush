@@ -3,15 +3,17 @@ extends Area2D
 
 signal item_collected
 
-## Extra world-space X added after the automatic above-pointer offset (0 = centred on pointer).
-@export var pointer_offset_x: float = 0.0
-## Extra world-space Y tweak (negative moves the hole further above the pointer).
-@export var pointer_offset_y: float = 0.0
-## Extra clear gap (world units) between the hole rim and the finger/cursor contact area.
-@export var finger_visibility_margin: float = 14.0
-## Approximate finger contact radius in viewport/screen pixels (converted once via canvas).
-@export var finger_contact_radius_screen: float = 34.0
-## Smaller desktop cursor contact radius in viewport/screen pixels.
+## Survives Android packaging so AAB inspection can prove this control model is present.
+const CONTROL_POSITION_MOVEMENT_MARKER: String = "hole_control_position_absolute_v2"
+
+## Extra world-space tweak applied after the automatic upward visibility offset.
+## X = 0 keeps the hole centred above the control position; negative Y raises it further.
+@export var pointer_visibility_offset: Vector2 = Vector2.ZERO
+## Extra clear gap (world units) between the hole rim and the control-position contact pad.
+@export var touch_visibility_margin: float = 14.0
+## Approximate touch contact radius in viewport/screen pixels (converted once via canvas).
+@export var touch_contact_radius_screen: float = 34.0
+## Smaller desktop mouse contact radius in viewport/screen pixels.
 @export var mouse_contact_radius_screen: float = 10.0
 
 var radius: float = GameConstants.INITIAL_HOLE_RADIUS
@@ -23,9 +25,9 @@ var _pulse: float = 0.0
 var _blocked_flash: float = 0.0
 var _swallow_pulse: float = 0.0
 
-## Active pointer tracking (absolute screen anchor + fixed offset).
+## Active control-position tracking (absolute screen/touch coords + fixed upward offset).
 var _active_touch_index: int = -1
-var _pointer_is_touch: bool = false
+var _control_is_touch: bool = false
 
 
 func _ready() -> void:
@@ -49,7 +51,7 @@ func setup(start_position: Vector2, bounds: Rect2) -> void:
 	_apply_radius(radius)
 	_is_dragging = false
 	_active_touch_index = -1
-	_pointer_is_touch = false
+	_control_is_touch = false
 	_redraw_visuals()
 
 
@@ -64,11 +66,17 @@ func set_paused(value: bool) -> void:
 	if value:
 		_is_dragging = false
 		_active_touch_index = -1
-		_pointer_is_touch = false
+		_control_is_touch = false
 
 
 func is_paused() -> bool:
 	return _paused
+
+
+## True when hole movement is driven by absolute control position + fixed upward offset
+## (not relative deltas / smoothing). Used by export / regression checks.
+func uses_absolute_control_position() -> bool:
+	return CONTROL_POSITION_MOVEMENT_MARKER == "hole_control_position_absolute_v2"
 
 
 func get_hole_size() -> int:
@@ -127,7 +135,7 @@ func _process(delta: float) -> void:
 func _physics_process(_delta: float) -> void:
 	if _paused:
 		return
-	# No smoothing / momentum: position is authoritative from the last pointer anchor.
+	# No smoothing / momentum: hole position equals the last clamped control-position target.
 	_target_position = _clamp_position(_target_position)
 	global_position = _target_position
 	_collect_overlapping_food()
@@ -144,6 +152,7 @@ func _collect_overlapping_food() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if _paused:
 		return
+	# HUD / Menu / Settings / Pause / popups mark input handled, so they never reach here.
 	if event is InputEventScreenTouch:
 		_handle_screen_touch(event as InputEventScreenTouch)
 		get_viewport().set_input_as_handled()
@@ -160,69 +169,69 @@ func _handle_screen_touch(touch: InputEventScreenTouch) -> void:
 	if touch.pressed:
 		if _active_touch_index >= 0 and touch.index != _active_touch_index:
 			return
-		_pointer_is_touch = true
+		_control_is_touch = true
 		_active_touch_index = touch.index
 		_is_dragging = true
-		# Absolute anchor with fixed offset — no relative accumulation, no wild jump from deltas.
-		_set_from_screen_pointer(touch.position, true)
+		# Absolute control position + fixed upward offset (no relative-delta accumulation).
+		set_from_control_position(touch.position, true)
 	else:
 		if touch.index == _active_touch_index:
 			_active_touch_index = -1
 			_is_dragging = false
-			_pointer_is_touch = false
+			_control_is_touch = false
 
 
 func _handle_screen_drag(drag: InputEventScreenDrag) -> void:
 	if _active_touch_index >= 0 and drag.index != _active_touch_index:
 		return
 	if not _is_dragging:
-		_pointer_is_touch = true
+		_control_is_touch = true
 		_active_touch_index = drag.index
 		_is_dragging = true
-	_set_from_screen_pointer(drag.position, true)
+	set_from_control_position(drag.position, true)
 
 
 func _handle_mouse_button(mouse: InputEventMouseButton) -> void:
 	if mouse.button_index != MOUSE_BUTTON_LEFT:
 		return
-	# When touch emulation is active, ignore mouse to prevent double application.
-	if _pointer_is_touch:
+	# Touch is the authoritative control position while active — ignore emulated mouse.
+	if _control_is_touch:
 		return
 	if mouse.pressed:
 		_is_dragging = true
-		_set_from_screen_pointer(mouse.position, false)
+		set_from_control_position(mouse.position, false)
 	else:
 		_is_dragging = false
 
 
 func _handle_mouse_motion(motion: InputEventMouseMotion) -> void:
-	if not _is_dragging or _pointer_is_touch:
+	if not _is_dragging or _control_is_touch:
 		return
-	_set_from_screen_pointer(motion.position, false)
+	set_from_control_position(motion.position, false)
 
 
-## Convert viewport/screen pointer to world once, then place the hole at pointer + offset.
-func _set_from_screen_pointer(screen_pos: Vector2, is_touch: bool) -> void:
-	var world_pointer := screen_to_world(screen_pos)
-	var offset := compute_pointer_offset_world(is_touch)
-	_target_position = _clamp_position(world_pointer + offset)
+## Place the hole from the current absolute control position (mouse or active touch).
+## hole_target = converted_control_position + upward_visibility_offset (then clamped).
+func set_from_control_position(screen_pos: Vector2, is_touch: bool) -> void:
+	var control_world := control_position_to_world(screen_pos)
+	var offset := compute_visibility_offset_world(is_touch)
+	_target_position = _clamp_position(control_world + offset)
 	global_position = _target_position
 
 
-## Screen/viewport → hole global/world space (single canvas inverse multiply).
-func screen_to_world(screen_pos: Vector2) -> Vector2:
+## Viewport/screen control position → hole global/world space (single canvas inverse).
+func control_position_to_world(screen_pos: Vector2) -> Vector2:
 	return get_canvas_transform().affine_inverse() * screen_pos
 
 
-## Fixed gap that keeps the pointer/finger just below the hole centre.
-## Uses current hole radius + contact pad (screen→world once) + visibility margin + exports.
-func compute_pointer_offset_world(is_touch: bool = true) -> Vector2:
-	var contact_screen := finger_contact_radius_screen if is_touch else mouse_contact_radius_screen
+## Fixed upward gap so the control position stays just below the hole centre.
+## Uses current hole radius + contact pad (screen→world once) + touch_visibility_margin.
+func compute_visibility_offset_world(is_touch: bool = true) -> Vector2:
+	var contact_screen := touch_contact_radius_screen if is_touch else mouse_contact_radius_screen
 	var contact_world := _screen_length_to_world(contact_screen)
-	var margin_world := finger_visibility_margin
-	# Negative Y = above the pointer so the centre stays visible while guiding from below.
-	var offset_y := -(radius + contact_world + margin_world) + pointer_offset_y
-	return Vector2(pointer_offset_x, offset_y)
+	# Negative Y = above the control position so the centre stays visible.
+	var offset_y := -(radius + contact_world + touch_visibility_margin) + pointer_visibility_offset.y
+	return Vector2(pointer_visibility_offset.x, offset_y)
 
 
 func _screen_length_to_world(screen_length: float) -> float:

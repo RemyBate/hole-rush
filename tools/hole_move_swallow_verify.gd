@@ -1,6 +1,7 @@
 extends Node
 
-## Hole anchored-pointer movement + swallow animation regression tests.
+## Control-position hole movement + swallow animation regression tests.
+## Desktop mouse and Android touch both drive the same absolute control-position model.
 
 
 const RESOLUTIONS: Array[Vector2i] = [
@@ -17,10 +18,13 @@ const FPS_SAMPLES: Array[int] = [30, 60, 90, 120]
 func _ready() -> void:
 	await get_tree().process_frame
 	var failed := 0
+	failed += _check_control_api()
 	failed += _check_anchor_offset_math()
 	failed += _check_100px_move_ratio()
 	failed += _check_no_drift_over_repeated_moves()
+	failed += _check_multi_touch_ignored()
 	failed += _check_clamp_with_offset()
+	failed += await _check_hud_input_ignored()
 	failed += await _check_movement_consistency()
 	failed += await _check_swallow_sequence()
 	failed += await _check_oversized_not_swallowed()
@@ -33,48 +37,67 @@ func _ready() -> void:
 	get_tree().quit(0)
 
 
+func _check_control_api() -> int:
+	var hole := (load("res://scenes/hole.tscn") as PackedScene).instantiate() as Hole
+	add_child(hole)
+	var failed := 0
+	if not hole.uses_absolute_control_position():
+		push_error("[MOVE] uses_absolute_control_position expected true")
+		failed += 1
+	if not hole.has_method("set_from_control_position"):
+		push_error("[MOVE] missing set_from_control_position")
+		failed += 1
+	if not hole.has_method("control_position_to_world"):
+		push_error("[MOVE] missing control_position_to_world")
+		failed += 1
+	if not hole.has_method("compute_visibility_offset_world"):
+		push_error("[MOVE] missing compute_visibility_offset_world")
+		failed += 1
+	# Structural: no legacy relative-delta / smoothing API.
+	if hole.get("move_sensitivity") != null or hole.get("move_drag_smoothing") != null:
+		push_error("[MOVE] legacy relative/smoothing exports still present")
+		failed += 1
+	if failed == 0:
+		print("[MOVE] OK control-position API")
+	hole.queue_free()
+	return failed
+
+
 func _check_anchor_offset_math() -> int:
 	var hole := (load("res://scenes/hole.tscn") as PackedScene).instantiate() as Hole
 	add_child(hole)
 	hole.global_position = Vector2(400, 800)
 	hole._target_position = hole.global_position
 	hole.radius = 48.0
-	hole.pointer_offset_x = 0.0
-	hole.pointer_offset_y = 0.0
-	hole.finger_visibility_margin = 14.0
-	hole.finger_contact_radius_screen = 34.0
+	hole.pointer_visibility_offset = Vector2.ZERO
+	hole.touch_visibility_margin = 14.0
+	hole.touch_contact_radius_screen = 34.0
 	hole.set_play_bounds(Rect2(0, 0, 3200, 3200))
 
-	var offset := hole.compute_pointer_offset_world(true)
+	var offset := hole.compute_visibility_offset_world(true)
 	if offset.x != 0.0:
-		push_error("[MOVE] expected pointer_offset_x 0, got %s" % offset.x)
+		push_error("[MOVE] expected visibility offset.x 0, got %s" % offset.x)
 		hole.queue_free()
 		return 1
-	# Hole must sit above the pointer (negative Y in Godot 2D).
 	if offset.y >= -hole.radius:
-		push_error("[MOVE] offset too small; pointer would cover hole centre: %s" % offset)
+		push_error("[MOVE] offset too small; control position would cover hole centre: %s" % offset)
 		hole.queue_free()
 		return 1
 
-	var pointer_world := Vector2(500, 900)
-	hole._set_from_screen_pointer(
-		hole.get_canvas_transform() * pointer_world,
-		true
-	)
-	# After set, hole should be above the world pointer by ~offset (clamped).
-	var gap := hole.global_position - pointer_world
+	var control_world := Vector2(500, 900)
+	hole.set_from_control_position(hole.get_canvas_transform() * control_world, true)
+	var gap := hole.global_position - control_world
 	if absf(gap.x - offset.x) > 1.5:
 		push_error("[MOVE] X gap drifted from offset: gap=%s offset=%s" % [gap, offset])
 		hole.queue_free()
 		return 1
 	if gap.y >= 0.0:
-		push_error("[MOVE] hole is not above pointer: gap.y=%s" % gap.y)
+		push_error("[MOVE] hole is not above control position: gap.y=%s" % gap.y)
 		hole.queue_free()
 		return 1
-	# Pointer must not intersect the central visible area (inside ~60% of radius).
-	var dist := hole.global_position.distance_to(pointer_world)
+	var dist := hole.global_position.distance_to(control_world)
 	if dist < hole.radius * 0.6:
-		push_error("[MOVE] pointer intersects hole centre dist=%s radius=%s" % [dist, hole.radius])
+		push_error("[MOVE] control position intersects hole centre dist=%s radius=%s" % [dist, hole.radius])
 		hole.queue_free()
 		return 1
 
@@ -88,15 +111,14 @@ func _check_100px_move_ratio() -> int:
 	add_child(hole)
 	hole.set_play_bounds(Rect2(0, 0, 4000, 4000))
 	hole.radius = 48.0
-	# Place via absolute screen coords derived from canvas.
 	var p0 := Vector2(600, 1000)
 	var p1 := p0 + Vector2(100, 0)
 	var p2 := p1 + Vector2(0, -100)
-	hole._set_from_screen_pointer(hole.get_canvas_transform() * p0, false)
+	hole.set_from_control_position(hole.get_canvas_transform() * p0, false)
 	var h0 := hole.global_position
-	hole._set_from_screen_pointer(hole.get_canvas_transform() * p1, false)
+	hole.set_from_control_position(hole.get_canvas_transform() * p1, false)
 	var h1 := hole.global_position
-	hole._set_from_screen_pointer(hole.get_canvas_transform() * p2, false)
+	hole.set_from_control_position(hole.get_canvas_transform() * p2, false)
 	var h2 := hole.global_position
 
 	var dx := h1 - h0
@@ -108,7 +130,6 @@ func _check_100px_move_ratio() -> int:
 	if absf(dy.y + 100.0) > 1.0 or absf(dy.x) > 1.0:
 		push_error("[MOVE] 100px up failed: hole moved %s" % dy)
 		failed += 1
-	# Gap must stay constant (no sensitivity multiply / no growing distance).
 	var gap0 := h0 - p0
 	var gap1 := h1 - p1
 	var gap2 := h2 - p2
@@ -133,12 +154,11 @@ func _check_no_drift_over_repeated_moves() -> int:
 	add_child(hole)
 	hole.set_play_bounds(Rect2(0, 0, 5000, 5000))
 	var base := Vector2(800, 1200)
-	hole._set_from_screen_pointer(hole.get_canvas_transform() * base, true)
+	hole.set_from_control_position(hole.get_canvas_transform() * base, true)
 	var expected_gap := hole.global_position - base
-	for i in 40:
-		var p := base + Vector2(float(i) * 7.0, float(i % 5) * -3.0)
-		hole._set_from_screen_pointer(hole.get_canvas_transform() * p, true)
-		# No lag: position equals clamped target immediately.
+	for i in 100:
+		var p := base + Vector2(float(i) * 5.0, float(i % 7) * -2.0)
+		hole.set_from_control_position(hole.get_canvas_transform() * p, true)
 		if hole.global_position.distance_to(hole._target_position) > 0.01:
 			push_error("[MOVE] smoothing lag detected")
 			hole.queue_free()
@@ -148,7 +168,44 @@ func _check_no_drift_over_repeated_moves() -> int:
 			push_error("[MOVE] drift at step %d gap=%s expected=%s" % [i, gap, expected_gap])
 			hole.queue_free()
 			return 1
-	print("[MOVE] OK no drift over 40 steps gap=", expected_gap)
+	print("[MOVE] OK no drift over 100 steps gap=", expected_gap)
+	hole.queue_free()
+	return 0
+
+
+func _check_multi_touch_ignored() -> int:
+	var hole := (load("res://scenes/hole.tscn") as PackedScene).instantiate() as Hole
+	add_child(hole)
+	hole.set_play_bounds(Rect2(0, 0, 4000, 4000))
+	var p0 := Vector2(700, 1100)
+	hole.set_from_control_position(hole.get_canvas_transform() * p0, true)
+	hole._control_is_touch = true
+	hole._active_touch_index = 0
+	hole._is_dragging = true
+	var before := hole.global_position
+
+	# Second finger drag must be ignored.
+	var drag := InputEventScreenDrag.new()
+	drag.index = 1
+	drag.position = hole.get_canvas_transform() * (p0 + Vector2(200, 0))
+	drag.relative = Vector2(200, 0)
+	hole._handle_screen_drag(drag)
+	if hole.global_position.distance_to(before) > 0.01:
+		push_error("[MOVE] second touch moved the hole")
+		hole.queue_free()
+		return 1
+
+	# Emulated mouse must not duplicate while touch is active.
+	var motion := InputEventMouseMotion.new()
+	motion.position = hole.get_canvas_transform() * (p0 + Vector2(150, 50))
+	motion.relative = Vector2(150, 50)
+	hole._handle_mouse_motion(motion)
+	if hole.global_position.distance_to(before) > 0.01:
+		push_error("[MOVE] emulated mouse duplicated touch movement")
+		hole.queue_free()
+		return 1
+
+	print("[MOVE] OK multi-touch / emulated-mouse ignored")
 	hole.queue_free()
 	return 0
 
@@ -159,9 +216,8 @@ func _check_clamp_with_offset() -> int:
 	hole.radius = 48.0
 	var bounds := Rect2(100, 200, 600, 900)
 	hole.set_play_bounds(bounds)
-	# Pointer far above / outside — hole must stay fully inside playable rect.
 	var outside := Vector2(bounds.position.x + 50, bounds.position.y - 200)
-	hole._set_from_screen_pointer(hole.get_canvas_transform() * outside, true)
+	hole.set_from_control_position(hole.get_canvas_transform() * outside, true)
 	var top := hole.global_position.y - hole.radius
 	if top < bounds.position.y - 0.5:
 		push_error("[MOVE] hole entered HUD/top after offset clamp")
@@ -172,10 +228,9 @@ func _check_clamp_with_offset() -> int:
 		push_error("[MOVE] hole left bound violated")
 		hole.queue_free()
 		return 1
-	# Return pointer to centre — offset resumes without sticking to a wrong gap.
 	var centre := bounds.position + bounds.size * 0.5
-	hole._set_from_screen_pointer(hole.get_canvas_transform() * centre, true)
-	var expected := hole.compute_pointer_offset_world(true)
+	hole.set_from_control_position(hole.get_canvas_transform() * centre, true)
+	var expected := hole.compute_visibility_offset_world(true)
 	var gap := hole.global_position - centre
 	if gap.distance_to(expected) > 1.0:
 		push_error("[MOVE] offset did not resume after clamp gap=%s expected=%s" % [gap, expected])
@@ -183,6 +238,37 @@ func _check_clamp_with_offset() -> int:
 		return 1
 	print("[MOVE] OK clamp+resume")
 	hole.queue_free()
+	return 0
+
+
+func _check_hud_input_ignored() -> int:
+	await _set_window(Vector2i(720, 1280))
+	var game := (load("res://scenes/game.tscn") as PackedScene).instantiate() as Node2D
+	add_child(game)
+	game.begin_level(2, [])
+	for _i in 12:
+		await get_tree().process_frame
+	var hole: Hole = game.get_node("Hole") as Hole
+	var before := hole.global_position
+	var hud := game.find_child("HUD", true, false)
+	if hud == null:
+		push_error("[MOVE] HUD missing")
+		await _teardown(game)
+		return 1
+	# Simulate a press that the HUD consumes (handled) — hole must not move.
+	var btn := hud.find_child("PauseButton", true, false)
+	if btn == null:
+		btn = hud.find_child("MenuButton", true, false)
+	if btn is BaseButton:
+		(btn as BaseButton).emit_signal("pressed")
+	await get_tree().process_frame
+	if hole.global_position.distance_to(before) > 1.0 and not hole._is_dragging:
+		# Pause may freeze hole; position must still not jump from a HUD click.
+		push_error("[MOVE] HUD interaction moved hole unexpectedly")
+		await _teardown(game)
+		return 1
+	print("[MOVE] OK HUD interaction does not drive hole")
+	await _teardown(game)
 	return 0
 
 
@@ -198,33 +284,31 @@ func _check_movement_consistency() -> int:
 			for _i in 12:
 				await get_tree().process_frame
 			var hole: Hole = game.get_node("Hole") as Hole
-			var start_pointer := hole.global_position - hole.compute_pointer_offset_world(false)
-			var screen0 := hole.get_canvas_transform() * start_pointer
-			hole._set_from_screen_pointer(screen0, false)
+			var start_control := hole.global_position - hole.compute_visibility_offset_world(false)
+			var screen0 := hole.get_canvas_transform() * start_control
+			hole.set_from_control_position(screen0, false)
 			var h0 := hole.global_position
-			var gap0 := h0 - start_pointer
+			var gap0 := h0 - start_control
 
-			# Move pointer 100 screen/world units right (canvas identity-ish in game world).
 			var steps := maxi(1, int(float(fps) * 0.25))
 			var per_step := 100.0 / float(steps)
-			var pointer := start_pointer
+			var control := start_control
 			for _s in steps:
-				pointer += Vector2(per_step, 0.0)
-				hole._set_from_screen_pointer(hole.get_canvas_transform() * pointer, false)
+				control += Vector2(per_step, 0.0)
+				hole.set_from_control_position(hole.get_canvas_transform() * control, false)
 				hole._physics_process(1.0 / float(fps))
 			var moved := hole.global_position.x - h0.x
 			var ratio := moved / 100.0
 			ratios.append(ratio)
-			var gap1 := hole.global_position - pointer
+			var gap1 := hole.global_position - control
 			if gap0.distance_to(gap1) > 2.0:
 				push_error("[MOVE] gap changed during drag res=%s fps=%d" % [str(res), fps])
 				failed += 1
 			if absf(ratio - 1.0) > 0.08:
 				push_error("[MOVE] bad 100px ratio=%.3f res=%s fps=%d" % [ratio, str(res), fps])
 				failed += 1
-			# Pointer stays below hole.
-			if hole.global_position.y >= pointer.y:
-				push_error("[MOVE] pointer not below hole res=%s" % str(res))
+			if hole.global_position.y >= control.y:
+				push_error("[MOVE] control position not below hole res=%s" % str(res))
 				failed += 1
 			var play: Rect2 = game.call("get_play_bounds")
 			if hole.global_position.y - hole.radius < play.position.y - 1.0:

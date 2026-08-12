@@ -14,6 +14,8 @@ const REQUIRED_SCRIPTS: Array[String] = [
 	"res://scripts/hud.gd",
 	"res://scripts/home_screen.gd",
 	"res://scripts/game.gd",
+	"res://scripts/hole.gd",
+	"res://scripts/food.gd",
 	"res://scripts/confirm_popup.gd",
 	"res://scripts/settings_popup.gd",
 	"res://scripts/level_prep_screen.gd",
@@ -55,6 +57,7 @@ func _ready() -> void:
 	failed += _check_export_preset()
 	failed += _check_android_icons()
 	failed += _check_catalog_probe()
+	failed += _check_control_position_movement()
 	if failed > 0:
 		push_error("[AEXPORT] FAILED %d" % failed)
 		get_tree().quit(1)
@@ -175,3 +178,83 @@ func _check_catalog_probe() -> int:
 		return 1
 	print("[AEXPORT] OK catalog probe entries=", entries.size(), " hud=", with_hud)
 	return 0
+
+
+## Behavioural / structural proof of absolute control-position movement (not string-name sniffing).
+func _check_control_position_movement() -> int:
+	var failed := 0
+	if not ResourceLoader.exists("res://scripts/hole.gd") and not FileAccess.file_exists("res://scripts/hole.gd"):
+		push_error("[AEXPORT] hole.gd missing")
+		return 1
+	var hole := (load("res://scenes/hole.tscn") as PackedScene).instantiate() as Hole
+	if hole == null:
+		push_error("[AEXPORT] hole scene instantiate failed")
+		return 1
+	add_child(hole)
+	hole.set_play_bounds(Rect2(0, 0, 4000, 4000))
+	hole.radius = 48.0
+	hole.pointer_visibility_offset = Vector2.ZERO
+	hole.touch_visibility_margin = 14.0
+
+	if not hole.uses_absolute_control_position():
+		push_error("[AEXPORT] hole does not report absolute control-position mode")
+		failed += 1
+	if not hole.has_method("set_from_control_position") or not hole.has_method("control_position_to_world"):
+		push_error("[AEXPORT] control-position API missing")
+		failed += 1
+	if hole.get("move_sensitivity") != null or hole.get("move_drag_smoothing") != null:
+		push_error("[AEXPORT] legacy relative/smoothing movement still present")
+		failed += 1
+
+	var offset := hole.compute_visibility_offset_world(true)
+	if offset.y >= -hole.radius:
+		push_error("[AEXPORT] visibility offset too small: %s" % offset)
+		failed += 1
+
+	var c0 := Vector2(900, 1400)
+	var c1 := c0 + Vector2(100, 0)
+	hole.set_from_control_position(hole.get_canvas_transform() * c0, true)
+	var h0 := hole.global_position
+	var gap0 := h0 - c0
+	hole.set_from_control_position(hole.get_canvas_transform() * c1, true)
+	var h1 := hole.global_position
+	var gap1 := h1 - c1
+	var moved := h1 - h0
+	if absf(moved.x - 100.0) > 1.0 or absf(moved.y) > 1.0:
+		push_error("[AEXPORT] control-position 100px move failed: %s" % moved)
+		failed += 1
+	if gap0.distance_to(gap1) > 0.75:
+		push_error("[AEXPORT] control-position gap not constant")
+		failed += 1
+	if h0.y >= c0.y or h1.y >= c1.y:
+		push_error("[AEXPORT] hole not above control position")
+		failed += 1
+	if hole.global_position.distance_to(hole._target_position) > 0.01:
+		push_error("[AEXPORT] smoothing lag present")
+		failed += 1
+
+	# Source-level markers that survive packaging intent (readable before compile).
+	var src := FileAccess.get_file_as_string("res://scripts/hole.gd")
+	for marker in [
+		"set_from_control_position",
+		"control_position_to_world",
+		"compute_visibility_offset_world",
+		"pointer_visibility_offset",
+		"touch_visibility_margin",
+		"uses_absolute_control_position",
+		"hole_control_position_absolute_v2",
+	]:
+		if not src.contains(marker):
+			push_error("[AEXPORT] hole.gd missing marker %s" % marker)
+			failed += 1
+
+	hole.queue_free()
+	if failed == 0:
+		print(
+			"[AEXPORT] OK control-position movement gap=",
+			gap0,
+			" moved=",
+			moved,
+			" absolute=true"
+		)
+	return failed

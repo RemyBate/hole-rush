@@ -12,6 +12,7 @@ func _ready() -> void:
 	failed += await _check_mission_previews()
 	failed += _check_booster_icons()
 	failed += await _check_settings_icons()
+	failed += await _check_home_hud_icons()
 	if failed > 0:
 		push_error("[PREPVIS] FAILED %d" % failed)
 		get_tree().quit(1)
@@ -85,6 +86,40 @@ func _check_settings_icons() -> int:
 			return 1
 	popup.queue_free()
 	print("[PREPVIS] OK settings icons")
+	return 0
+
+
+func _check_home_hud_icons() -> int:
+	var home := (load("res://scenes/ui/home_screen.tscn") as PackedScene).instantiate() as Control
+	add_child(home)
+	await get_tree().process_frame
+	var settings := home.get_node("%SettingsButton") as Button
+	if settings == null or settings.icon == null or settings.text != "":
+		push_error("[PREPVIS] home settings gear still emoji/text")
+		home.queue_free()
+		return 1
+	var nav_home := home.get_node("%NavHome") as Button
+	if nav_home == null or nav_home.icon == null or nav_home.text.find("🏠") >= 0:
+		push_error("[PREPVIS] home nav still uses emoji")
+		home.queue_free()
+		return 1
+	home.queue_free()
+
+	var hud := (load("res://scenes/ui/hud.tscn") as PackedScene).instantiate() as Control
+	add_child(hud)
+	await get_tree().process_frame
+	var hud_settings := hud.get_node("%SettingsButton") as Button
+	var pause := hud.get_node("%PauseButton") as Button
+	if hud_settings == null or hud_settings.icon == null or hud_settings.text != "":
+		push_error("[PREPVIS] HUD settings still emoji")
+		hud.queue_free()
+		return 1
+	if pause == null or pause.icon == null:
+		push_error("[PREPVIS] HUD pause missing procedural icon")
+		hud.queue_free()
+		return 1
+	hud.queue_free()
+	print("[PREPVIS] OK home/HUD chrome icons")
 	return 0
 
 

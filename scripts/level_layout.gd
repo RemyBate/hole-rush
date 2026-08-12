@@ -9,9 +9,9 @@ const SPAWN_MARGIN: int = 2
 
 ## Twelve open zones — fewer clusters, more travel space.
 const ZONES: Array[Vector2] = [
-	Vector2(700.0, 540.0),
-	Vector2(1600.0, 540.0),
-	Vector2(2500.0, 540.0),
+	Vector2(700.0, 760.0),
+	Vector2(1600.0, 760.0),
+	Vector2(2500.0, 760.0),
 	Vector2(700.0, 1220.0),
 	Vector2(1600.0, 1220.0),
 	Vector2(2500.0, 1220.0),
@@ -45,16 +45,16 @@ static func build_mixed_level(spawner: FoodSpawner, origin: Vector2, plan: Level
 
 	# Zone centers for formations (avoid HUD top strip / hole center).
 	var zones: Array[Vector2] = [
-		origin + Vector2(700.0, 640.0),
-		origin + Vector2(1600.0, 540.0),
-		origin + Vector2(2500.0, 640.0),
+		origin + Vector2(700.0, 860.0),
+		origin + Vector2(1600.0, 820.0),
+		origin + Vector2(2500.0, 860.0),
 		origin + Vector2(700.0, 1320.0),
 		origin + Vector2(2500.0, 1320.0),
 		origin + Vector2(700.0, 2020.0),
 		origin + Vector2(1600.0, 2120.0),
 		origin + Vector2(2500.0, 2020.0),
-		origin + Vector2(1100.0, 980.0),
-		origin + Vector2(2100.0, 980.0),
+		origin + Vector2(1100.0, 1120.0),
+		origin + Vector2(2100.0, 1120.0),
 	]
 
 	var entries: Array = plan.field_entries.duplicate()

@@ -10,6 +10,7 @@ const TrophyScreenScene: PackedScene = preload("res://scenes/ui/trophy_screen.ts
 const CollectionScreenScene: PackedScene = preload("res://scenes/ui/collection_screen.tscn")
 const EventPopupScene: PackedScene = preload("res://scenes/ui/event_popup.tscn")
 const GoldCoinIconScript: Script = preload("res://scripts/gold_coin_icon.gd")
+const _UiIcons := preload("res://scripts/ui_icons.gd")
 
 const EVENT_LEFT: Array = [
 	["🏆", "Tournament", Color(0.92, 0.55, 0.18), 2 * 86400 + 9 * 3600],
@@ -60,12 +61,15 @@ var _coin_anim_busy: bool = false
 func _ready() -> void:
 	_cache_nav()
 	_apply_premium_theme()
+	_apply_android_icons()
+	_apply_safe_area()
 	_build_event_buttons()
 	_level_button.pressed.connect(_on_level_button_pressed)
 	_settings_button.pressed.connect(_on_settings_pressed)
 	_avatar_button.pressed.connect(_on_avatar_pressed)
 	_level_prep.play_pressed.connect(_on_prep_play)
 	GameSettings.profile_changed.connect(refresh_ui)
+	get_viewport().size_changed.connect(_apply_safe_area)
 	_setup_settings()
 	_setup_shop()
 	_setup_feature_popups()
@@ -251,6 +255,61 @@ func _cache_nav() -> void:
 			_nav_wraps.append(wrap)
 	for i in _nav_buttons.size():
 		_nav_buttons[i].pressed.connect(_on_nav_pressed.bind(i))
+
+
+func _apply_android_icons() -> void:
+	_UiIcons.mount_button_icon(_settings_button, _UiIcons.Id.GEAR, 56, "")
+	var heart := _top_bar.find_child("HeartIcon", true, false) as Label
+	if heart:
+		_UiIcons.replace_label_with_icon(heart, _UiIcons.Id.HEART, 40)
+	var key := _progress_section.find_child("KeyReward", true, false) as Label
+	if key:
+		_UiIcons.replace_label_with_icon(key, _UiIcons.Id.KEY, 36)
+	var hour := _progress_section.find_child("HourReward", true, false) as Label
+	if hour:
+		_UiIcons.replace_label_with_icon(hour, _UiIcons.Id.HOURGLASS, 34)
+	var nav_ids: Array[int] = [
+		_UiIcons.Id.SHOP, _UiIcons.Id.MAP, _UiIcons.Id.HOME, _UiIcons.Id.TROPHY, _UiIcons.Id.COLLECTION
+	]
+	var nav_labels: Array[String] = ["Shop", "Map", "Home", "Trophy", "Collection"]
+	for i in _nav_buttons.size():
+		_UiIcons.mount_button_icon(_nav_buttons[i], nav_ids[i], 40, nav_labels[i])
+		_nav_buttons[i].alignment = HORIZONTAL_ALIGNMENT_CENTER
+
+
+func _apply_safe_area() -> void:
+	var extra_top := 0
+	var extra_bottom := 0
+	var extra_left := 0
+	var extra_right := 0
+	var safe := DisplayServer.get_display_safe_area()
+	var win := get_window()
+	if win != null:
+		var win_pos := win.position
+		var win_size := win.size
+		extra_top = maxi(0, safe.position.y - win_pos.y)
+		extra_left = maxi(0, safe.position.x - win_pos.x)
+		extra_right = maxi(0, (win_pos.x + win_size.x) - safe.end.x)
+		extra_bottom = maxi(0, (win_pos.y + win_size.y) - safe.end.y)
+	extra_top = clampi(extra_top, 0, 80)
+	extra_left = clampi(extra_left, 0, 40)
+	extra_right = clampi(extra_right, 0, 40)
+	extra_bottom = clampi(extra_bottom, 0, 80)
+	if _top_bar:
+		_top_bar.offset_top = 12.0 + float(extra_top)
+		_top_bar.offset_bottom = 118.0 + float(extra_top)
+		_top_bar.offset_left = 12.0 + float(extra_left)
+		_top_bar.offset_right = -12.0 - float(extra_right)
+	if _progress_section:
+		_progress_section.offset_top = 128.0 + float(extra_top)
+		_progress_section.offset_bottom = 228.0 + float(extra_top)
+		_progress_section.offset_left = 20.0 + float(extra_left)
+		_progress_section.offset_right = -20.0 - float(extra_right)
+	if _bottom_nav:
+		_bottom_nav.offset_bottom = -float(extra_bottom)
+		_bottom_nav.offset_top = -118.0 - float(extra_bottom)
+		_bottom_nav.offset_left = 8.0 + float(extra_left)
+		_bottom_nav.offset_right = -8.0 - float(extra_right)
 
 
 func _build_event_buttons() -> void:

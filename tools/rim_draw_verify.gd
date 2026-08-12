@@ -5,8 +5,8 @@ extends Node
 
 func _ready() -> void:
 	await get_tree().process_frame
-	GameSettings._dev_watermelon_test_pending = false
-	GameSettings._session_play_level = 0
+	if GameSettings.get("_session_play_level") != null:
+		GameSettings._session_play_level = 0
 
 	var packed: PackedScene = load("res://scenes/game.tscn")
 	var game: Node2D = packed.instantiate() as Node2D

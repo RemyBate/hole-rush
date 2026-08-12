@@ -1,4 +1,5 @@
 extends Node
+const _SafeCapture := preload("res://tools/safe_viewport_capture.gd")
 
 ## Graphical verify: Level 4 mixed numbered collectibles + HUD image cards.
 
@@ -110,7 +111,11 @@ func _ready() -> void:
 	RenderingServer.force_draw()
 	await get_tree().process_frame
 	await get_tree().process_frame
-	var img: Image = get_viewport().get_texture().get_image()
+	var img: Image = null
+	if not _SafeCapture.is_headless():
+		var _tex := get_viewport().get_texture()
+		if _tex != null:
+			img = _tex.get_image()
 	if img:
 		var out := ProjectSettings.globalize_path("res://tools/mixed_level4_verify.png")
 		img.save_png(out)

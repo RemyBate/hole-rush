@@ -3,8 +3,16 @@ extends Area2D
 
 signal item_collected
 
-## Follow speed while dragging (higher = snappier).
-@export var move_drag_smoothing: float = 26.0
+## Extra world-space X added after the automatic above-pointer offset (0 = centred on pointer).
+@export var pointer_offset_x: float = 0.0
+## Extra world-space Y tweak (negative moves the hole further above the pointer).
+@export var pointer_offset_y: float = 0.0
+## Extra clear gap (world units) between the hole rim and the finger/cursor contact area.
+@export var finger_visibility_margin: float = 14.0
+## Approximate finger contact radius in viewport/screen pixels (converted once via canvas).
+@export var finger_contact_radius_screen: float = 34.0
+## Smaller desktop cursor contact radius in viewport/screen pixels.
+@export var mouse_contact_radius_screen: float = 10.0
 
 var radius: float = GameConstants.INITIAL_HOLE_RADIUS
 var _target_position: Vector2 = Vector2.ZERO
@@ -14,6 +22,10 @@ var _play_bounds: Rect2 = Rect2()
 var _pulse: float = 0.0
 var _blocked_flash: float = 0.0
 var _swallow_pulse: float = 0.0
+
+## Active pointer tracking (absolute screen anchor + fixed offset).
+var _active_touch_index: int = -1
+var _pointer_is_touch: bool = false
 
 
 func _ready() -> void:
@@ -35,6 +47,9 @@ func setup(start_position: Vector2, bounds: Rect2) -> void:
 	_play_bounds = bounds
 	radius = GameConstants.INITIAL_HOLE_RADIUS
 	_apply_radius(radius)
+	_is_dragging = false
+	_active_touch_index = -1
+	_pointer_is_touch = false
 	_redraw_visuals()
 
 
@@ -46,6 +61,14 @@ func set_play_bounds(bounds: Rect2) -> void:
 
 func set_paused(value: bool) -> void:
 	_paused = value
+	if value:
+		_is_dragging = false
+		_active_touch_index = -1
+		_pointer_is_touch = false
+
+
+func is_paused() -> bool:
+	return _paused
 
 
 func get_hole_size() -> int:
@@ -104,24 +127,10 @@ func _process(delta: float) -> void:
 func _physics_process(_delta: float) -> void:
 	if _paused:
 		return
-
-	_update_pointer_target()
+	# No smoothing / momentum: position is authoritative from the last pointer anchor.
 	_target_position = _clamp_position(_target_position)
-
-	var follow_t := 1.0 - exp(-move_drag_smoothing * _delta)
-	global_position = _clamp_position(global_position.lerp(_target_position, follow_t))
-
+	global_position = _target_position
 	_collect_overlapping_food()
-
-
-func _update_pointer_target() -> void:
-	var follow := _is_dragging
-	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-		follow = true
-		_is_dragging = true
-	if not follow:
-		return
-	_target_position = get_global_mouse_position()
 
 
 func _collect_overlapping_food() -> void:
@@ -136,21 +145,91 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _paused:
 		return
 	if event is InputEventScreenTouch:
-		var touch := event as InputEventScreenTouch
-		_is_dragging = touch.pressed
-		if touch.pressed:
-			_target_position = get_global_mouse_position()
+		_handle_screen_touch(event as InputEventScreenTouch)
+		get_viewport().set_input_as_handled()
 	elif event is InputEventScreenDrag:
-		_is_dragging = true
-		_target_position = get_global_mouse_position()
+		_handle_screen_drag(event as InputEventScreenDrag)
+		get_viewport().set_input_as_handled()
 	elif event is InputEventMouseButton:
-		var mouse := event as InputEventMouseButton
-		if mouse.button_index == MOUSE_BUTTON_LEFT:
-			_is_dragging = mouse.pressed
-			if mouse.pressed:
-				_target_position = get_global_mouse_position()
-	elif event is InputEventMouseMotion and _is_dragging:
-		_target_position = get_global_mouse_position()
+		_handle_mouse_button(event as InputEventMouseButton)
+	elif event is InputEventMouseMotion:
+		_handle_mouse_motion(event as InputEventMouseMotion)
+
+
+func _handle_screen_touch(touch: InputEventScreenTouch) -> void:
+	if touch.pressed:
+		if _active_touch_index >= 0 and touch.index != _active_touch_index:
+			return
+		_pointer_is_touch = true
+		_active_touch_index = touch.index
+		_is_dragging = true
+		# Absolute anchor with fixed offset — no relative accumulation, no wild jump from deltas.
+		_set_from_screen_pointer(touch.position, true)
+	else:
+		if touch.index == _active_touch_index:
+			_active_touch_index = -1
+			_is_dragging = false
+			_pointer_is_touch = false
+
+
+func _handle_screen_drag(drag: InputEventScreenDrag) -> void:
+	if _active_touch_index >= 0 and drag.index != _active_touch_index:
+		return
+	if not _is_dragging:
+		_pointer_is_touch = true
+		_active_touch_index = drag.index
+		_is_dragging = true
+	_set_from_screen_pointer(drag.position, true)
+
+
+func _handle_mouse_button(mouse: InputEventMouseButton) -> void:
+	if mouse.button_index != MOUSE_BUTTON_LEFT:
+		return
+	# When touch emulation is active, ignore mouse to prevent double application.
+	if _pointer_is_touch:
+		return
+	if mouse.pressed:
+		_is_dragging = true
+		_set_from_screen_pointer(mouse.position, false)
+	else:
+		_is_dragging = false
+
+
+func _handle_mouse_motion(motion: InputEventMouseMotion) -> void:
+	if not _is_dragging or _pointer_is_touch:
+		return
+	_set_from_screen_pointer(motion.position, false)
+
+
+## Convert viewport/screen pointer to world once, then place the hole at pointer + offset.
+func _set_from_screen_pointer(screen_pos: Vector2, is_touch: bool) -> void:
+	var world_pointer := screen_to_world(screen_pos)
+	var offset := compute_pointer_offset_world(is_touch)
+	_target_position = _clamp_position(world_pointer + offset)
+	global_position = _target_position
+
+
+## Screen/viewport → hole global/world space (single canvas inverse multiply).
+func screen_to_world(screen_pos: Vector2) -> Vector2:
+	return get_canvas_transform().affine_inverse() * screen_pos
+
+
+## Fixed gap that keeps the pointer/finger just below the hole centre.
+## Uses current hole radius + contact pad (screen→world once) + visibility margin + exports.
+func compute_pointer_offset_world(is_touch: bool = true) -> Vector2:
+	var contact_screen := finger_contact_radius_screen if is_touch else mouse_contact_radius_screen
+	var contact_world := _screen_length_to_world(contact_screen)
+	var margin_world := finger_visibility_margin
+	# Negative Y = above the pointer so the centre stays visible while guiding from below.
+	var offset_y := -(radius + contact_world + margin_world) + pointer_offset_y
+	return Vector2(pointer_offset_x, offset_y)
+
+
+func _screen_length_to_world(screen_length: float) -> float:
+	if screen_length <= 0.0:
+		return 0.0
+	var inv := get_canvas_transform().affine_inverse()
+	return inv.basis_xform(Vector2(0.0, screen_length)).length()
 
 
 func _on_area_entered(area: Area2D) -> void:
@@ -167,7 +246,10 @@ func notify_collected() -> void:
 
 
 func _apply_radius(new_radius: float) -> void:
-	var shape := $CollisionShape2D.shape as CircleShape2D
+	var shape_node := get_node_or_null("CollisionShape2D") as CollisionShape2D
+	if shape_node == null:
+		return
+	var shape := shape_node.shape as CircleShape2D
 	if shape:
 		shape.radius = new_radius
 

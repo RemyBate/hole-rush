@@ -57,7 +57,7 @@ func _draw() -> void:
 	# Sandy seabed with depth.
 	var sand_y := h * 0.74
 	draw_rect(Rect2(0, sand_y, w, h - sand_y), Color(0.86, 0.72, 0.5, 1.0))
-	draw_rect(Rect2(0, sand_y, w, 36), Color(0.7, 0.55, 0.36, 0.9), true, 10.0)
+	draw_rect(Rect2(0, sand_y, w, 36), Color(0.7, 0.55, 0.36, 0.9))
 	for i in 10:
 		var rx := w * (0.05 + float(i) * 0.1)
 		draw_circle(Vector2(rx, sand_y + 28 + sin(float(i)) * 8), 14 + float(i % 4) * 4, Color(0.55, 0.48, 0.4, 0.65))
@@ -89,7 +89,7 @@ func _draw() -> void:
 
 func _draw_ship(pos: Vector2, scale: float) -> void:
 	var hull := Color(0.42, 0.22, 0.12, 0.92)
-	draw_rect(Rect2(pos.x - 90 * scale, pos.y, 180 * scale, 28 * scale), hull, true, 6.0)
+	draw_rect(Rect2(pos.x - 90 * scale, pos.y, 180 * scale, 28 * scale), hull)
 	draw_colored_polygon(
 		PackedVector2Array([
 			pos + Vector2(-95 * scale, 0),
@@ -99,8 +99,8 @@ func _draw_ship(pos: Vector2, scale: float) -> void:
 		]),
 		Color(0.55, 0.28, 0.14, 0.9)
 	)
-	draw_rect(Rect2(pos.x + 30 * scale, pos.y - 85 * scale, 12 * scale, 90 * scale), Color(0.38, 0.2, 0.1, 0.85), true, 3.0)
-	draw_rect(Rect2(pos.x + 55 * scale, pos.y - 70 * scale, 10 * scale, 75 * scale), Color(0.38, 0.2, 0.1, 0.8), true, 3.0)
+	draw_rect(Rect2(pos.x + 30 * scale, pos.y - 85 * scale, 12 * scale, 90 * scale), Color(0.38, 0.2, 0.1, 0.85))
+	draw_rect(Rect2(pos.x + 55 * scale, pos.y - 70 * scale, 10 * scale, 75 * scale), Color(0.38, 0.2, 0.1, 0.8))
 	# Sail.
 	draw_colored_polygon(
 		PackedVector2Array([
@@ -123,10 +123,10 @@ func _draw_coral(pos: Vector2, col: Color) -> void:
 
 func _draw_treasure(pos: Vector2) -> void:
 	# Chest.
-	draw_rect(Rect2(pos.x - 58, pos.y - 6, 116, 52), Color(0.5, 0.3, 0.12, 1.0), true, 8.0)
-	draw_rect(Rect2(pos.x - 62, pos.y - 40, 124, 36), Color(0.62, 0.38, 0.15, 1.0), true, 10.0)
+	draw_rect(Rect2(pos.x - 58, pos.y - 6, 116, 52), Color(0.5, 0.3, 0.12, 1.0))
+	draw_rect(Rect2(pos.x - 62, pos.y - 40, 124, 36), Color(0.62, 0.38, 0.15, 1.0))
 	draw_arc(pos + Vector2(0, -22), 32, PI, 0.0, 28, Color(0.72, 0.45, 0.18), 7.0)
-	draw_rect(Rect2(pos.x - 8, pos.y - 18, 16, 22), Color(0.35, 0.2, 0.08), true, 3.0)
+	draw_rect(Rect2(pos.x - 8, pos.y - 18, 16, 22), Color(0.35, 0.2, 0.08))
 	# Coin pile.
 	for i in 10:
 		_draw_coin_icon(pos + Vector2(-48 + i * 11 + (i % 2) * 4, 8 - (i % 3) * 5), 11.0)

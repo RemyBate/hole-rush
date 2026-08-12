@@ -222,7 +222,7 @@ func _on_booster_toggled(id: int) -> void:
 func _on_play_pressed() -> void:
 	GameSettings.play_ui_click()
 	if not GameSettings.can_play():
-		push_warning("[PREP] Play blocked — no lives remaining")
+		print("[PREP] Play blocked — no lives remaining")
 		_show_no_lives_feedback()
 		return
 	var boosters: Array = []

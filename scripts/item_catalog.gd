@@ -6,6 +6,9 @@ extends RefCounted
 
 const CATEGORY_FRUITS: String = "fruits"
 const BASE_DIR: String = "res://assets/items"
+## Probe range when exported packs only expose .import/.ctex (no raw PNG listing).
+const MAX_ID_PROBE: int = 64
+
 
 ## category -> Array[ItemEntry]
 static var _entries: Dictionary = {}
@@ -19,34 +22,44 @@ static func ensure_loaded(category: String = CATEGORY_FRUITS) -> void:
 	_entries[category] = []
 	_invalid[category] = []
 	var dir_path := "%s/%s" % [BASE_DIR, category]
+	var ids: Array[int] = []
+	var seen: Dictionary = {}
+
 	var da := DirAccess.open(dir_path)
-	if da == null:
-		push_warning("ItemCatalog: cannot open %s" % dir_path)
+	if da != null:
+		da.list_dir_begin()
+		var file_name := da.get_next()
+		while file_name != "":
+			if not da.current_is_dir():
+				var id := _parse_numbered_id(file_name)
+				if id > 0 and not seen.has(id):
+					seen[id] = true
+					ids.append(id)
+				elif id < 0:
+					(_invalid[category] as Array).append("%s (non-numeric name)" % file_name)
+			file_name = da.get_next()
+		da.list_dir_end()
+	else:
+		# Optional theme folders (vegetables/fast_food/pizzas) fall back to fruits.
+		print("[ItemCatalog] no folder for %s — probing ResourceLoader ids" % category)
+
+	# Android export often lists only *.png.import (or nothing usable). Always probe
+	# ResourceLoader so packaged .ctex remaps still register as fruits:N.
+	for id in range(1, MAX_ID_PROBE + 1):
+		if seen.has(id):
+			continue
+		var path := "%s/%s/%d.png" % [BASE_DIR, category, id]
+		if ResourceLoader.exists(path) or FileAccess.file_exists(path):
+			seen[id] = true
+			ids.append(id)
+
+	ids.sort()
+	if ids.is_empty():
+		print("[ItemCatalog] %s: no numbered textures found" % category)
 		_loaded[category] = true
 		return
 
-	var ids: Array[int] = []
-	da.list_dir_begin()
-	var file_name := da.get_next()
-	while file_name != "":
-		if not da.current_is_dir() and file_name.ends_with(".png") and not file_name.ends_with(".import"):
-			var stem := file_name.get_basename()
-			if stem.is_valid_int():
-				var id := int(stem)
-				if id > 0:
-					ids.append(id)
-			else:
-				(_invalid[category] as Array).append("%s (non-numeric name)" % file_name)
-		file_name = da.get_next()
-	da.list_dir_end()
-	ids.sort()
-
-	var seen: Dictionary = {}
 	for id in ids:
-		if seen.has(id):
-			(_invalid[category] as Array).append("%d.png (duplicate id)" % id)
-			continue
-		seen[id] = true
 		var entry := _build_entry(category, id)
 		if entry.valid:
 			(_entries[category] as Array).append(entry)
@@ -61,6 +74,20 @@ static func ensure_loaded(category: String = CATEGORY_FRUITS) -> void:
 	)
 
 
+## Accepts "12.png", "12.png.import", "12.PNG".
+static func _parse_numbered_id(file_name: String) -> int:
+	var name := file_name
+	if name.ends_with(".import"):
+		name = name.substr(0, name.length() - ".import".length())
+	if not name.to_lower().ends_with(".png"):
+		return 0
+	var stem := name.get_basename()
+	if stem.is_valid_int():
+		var id := int(stem)
+		return id if id > 0 else 0
+	return -1
+
+
 static func _build_entry(category: String, image_id: int) -> ItemEntry:
 	var entry := ItemEntry.new()
 	entry.category = category
@@ -71,17 +98,38 @@ static func _build_entry(category: String, image_id: int) -> ItemEntry:
 		entry.invalid_reason = "file missing"
 		return entry
 
-	var img := Image.load_from_file(ProjectSettings.globalize_path(entry.path))
+	# Prefer imported Texture2D (works on Android with .ctex remaps).
+	var tex: Texture2D = load(entry.path) as Texture2D
+
+	# Optional CPU image for size-class analysis + cropped HUD bake.
+	var img: Image = null
+	var abs_path := ProjectSettings.globalize_path(entry.path)
+	if FileAccess.file_exists(entry.path) or FileAccess.file_exists(abs_path):
+		img = Image.load_from_file(abs_path)
+	if img == null and tex != null:
+		img = tex.get_image()
+
+	if tex == null and img != null:
+		tex = ImageTexture.create_from_image(img)
+	if tex == null:
+		entry.invalid_reason = "texture load failed"
+		return entry
+
+	entry.texture = tex
+
 	if img == null:
-		# Fallback via resource load after import.
-		var tex_try: Texture2D = load(entry.path) as Texture2D
-		if tex_try == null:
-			entry.invalid_reason = "failed to load"
-			return entry
-		img = tex_try.get_image()
-		if img == null:
-			entry.invalid_reason = "no image data"
-			return entry
+		# Mobile compressed textures often cannot expose CPU pixels. Keep the entry
+		# valid and show the full imported texture in HUD cards.
+		entry.size_class = _stable_size_class(image_id, 0.30)
+		entry.visual_radius = ItemEntry.radius_for_class(entry.size_class)
+		entry.score_value = ItemEntry.score_for_class(entry.size_class)
+		entry.growth_bonus = ItemEntry.growth_for_class(entry.size_class)
+		entry.spawn_weight = 1.25 - float(entry.size_class) * 0.1
+		entry.content_fill = 0.8
+		entry.hud_preview = tex
+		entry.valid = true
+		entry.mission_eligible = true
+		return entry
 
 	if img.get_format() != Image.FORMAT_RGBA8:
 		img.convert(Image.FORMAT_RGBA8)
@@ -146,18 +194,41 @@ static func _build_entry(category: String, image_id: int) -> ItemEntry:
 	entry.growth_bonus = ItemEntry.growth_for_class(size_class)
 	entry.spawn_weight = 1.25 - float(size_class) * 0.1
 
-	var tex: Texture2D = load(entry.path) as Texture2D
-	if tex == null:
-		var img_tex := ImageTexture.create_from_image(img)
-		tex = img_tex
-	if tex == null:
-		entry.invalid_reason = "texture load failed"
-		return entry
+	# Bake cropped HUD ImageTexture once (desktop / when CPU pixels exist).
+	entry.hud_preview = _bake_hud_preview(img, entry.content_rect, tex)
 
-	entry.texture = tex
 	entry.valid = true
 	entry.mission_eligible = true
 	return entry
+
+
+static func _bake_hud_preview(img: Image, content_rect: Rect2i, fallback: Texture2D) -> Texture2D:
+	if img == null:
+		return fallback
+	var region := content_rect
+	if region.size.x < 4 or region.size.y < 4:
+		region = Rect2i(0, 0, img.get_width(), img.get_height())
+	region = region.intersection(Rect2i(0, 0, img.get_width(), img.get_height()))
+	if region.size.x < 4 or region.size.y < 4:
+		return fallback
+	var cropped := img.get_region(region)
+	# Normalize to a readable HUD size so TextureRect never collapses to a speck.
+	var max_side := maxi(cropped.get_width(), cropped.get_height())
+	if max_side > 0 and max_side < 64:
+		var scale := 64.0 / float(max_side)
+		cropped.resize(
+			maxi(64, int(cropped.get_width() * scale)),
+			maxi(64, int(cropped.get_height() * scale)),
+			Image.INTERPOLATE_BILINEAR
+		)
+	elif max_side > 256:
+		var scale_down := 256.0 / float(max_side)
+		cropped.resize(
+			maxi(64, int(cropped.get_width() * scale_down)),
+			maxi(64, int(cropped.get_height() * scale_down)),
+			Image.INTERPOLATE_BILINEAR
+		)
+	return ImageTexture.create_from_image(cropped)
 
 
 ## Bounding rect of pixels with alpha above threshold (ignores soft fringe).
@@ -211,7 +282,7 @@ static func _stable_size_class(image_id: int, content_ratio: float) -> int:
 	return clampi(base, ItemEntry.SizeClass.EXTRA_SMALL, ItemEntry.SizeClass.EXTRA_LARGE)
 
 
-static func reload(category: String = CATEGORY_FRUITS) -> void:
+static func reload_category(category: String = CATEGORY_FRUITS) -> void:
 	_loaded[category] = false
 	_entries[category] = []
 	_invalid[category] = []

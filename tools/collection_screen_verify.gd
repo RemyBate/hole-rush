@@ -1,4 +1,5 @@
 extends Node
+const _SafeCapture := preload("res://tools/safe_viewport_capture.gd")
 
 ## Full-screen Collection page verification.
 
@@ -150,13 +151,21 @@ func _ready() -> void:
 
 
 func _capture(name: String) -> int:
+	var path := ProjectSettings.globalize_path("res://tools/%s_verify.png" % name)
+	if _SafeCapture.is_headless():
+		print("[CAP] skip headless screenshot ", path)
+		return 0
 	RenderingServer.force_draw()
 	await get_tree().process_frame
-	var img: Image = get_viewport().get_texture().get_image()
-	if img == null:
-		push_error("[COL] no image for " + name)
+	var tex := get_viewport().get_texture()
+	if tex == null:
+		push_error("[CAP] no image for " + name)
 		return 1
-	var path := ProjectSettings.globalize_path("res://tools/%s_verify.png" % name)
+	var img: Image = tex.get_image()
+	if img == null:
+		push_error("[CAP] no image for " + name)
+		return 1
 	img.save_png(path)
-	print("[COL] screenshot=", path)
+	print("[CAP] screenshot=", path)
 	return 0
+

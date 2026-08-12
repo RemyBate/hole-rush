@@ -9,7 +9,8 @@ signal save_progress_requested
 signal settings_opened
 signal settings_closed
 
-@onready var top_safe: MarginContainer = $TopSafe
+@onready var header_band: PanelContainer = %HeaderBand
+@onready var top_safe: MarginContainer = $HeaderBand/TopSafe
 @onready var hint_label: Label = $HintLabel
 @onready var timer_bar: ProgressBar = %TimerBar
 @onready var timer_label: Label = %TimerLabel
@@ -30,6 +31,9 @@ const ConfirmPopupScene: PackedScene = preload("res://scenes/ui/confirm_popup.ts
 const SettingsPopupScene: PackedScene = preload("res://scenes/ui/settings_popup.tscn")
 const VictoryScreenScene: PackedScene = preload("res://scenes/ui/victory_screen.tscn")
 const GameOverScreenScene: PackedScene = preload("res://scenes/ui/game_over_screen.tscn")
+const _UiIcons := preload("res://scripts/ui_icons.gd")
+const MISSION_ICON_SIZE := Vector2(48, 48)
+const HEADER_BOTTOM_PAD := 4.0
 
 var _settings_popup: Control = null
 var _leave_confirm: Control = null
@@ -42,12 +46,14 @@ var _mission_icons: Array[Label] = []
 var _mission_icon_textures: Array[TextureRect] = []
 var _mission_titles: Array[Label] = []
 var _mission_progress: Array[Label] = []
+var _header_height: float = 280.0
 
 
 func _ready() -> void:
 	result_panel.hide()
 	pause_overlay.hide()
 	_cache_mission_widgets()
+	_apply_android_icons()
 	_apply_safe_area()
 	_apply_ui_theme()
 	_setup_result_screens()
@@ -57,6 +63,13 @@ func _ready() -> void:
 	settings_button.pressed.connect(_on_settings_pressed)
 	if menu_button:
 		menu_button.pressed.connect(_on_menu_pressed)
+	get_viewport().size_changed.connect(_on_viewport_size_changed)
+	call_deferred("_refresh_header_layout")
+
+
+func _on_viewport_size_changed() -> void:
+	_apply_safe_area()
+	call_deferred("_refresh_header_layout")
 
 
 func _cache_mission_widgets() -> void:
@@ -69,7 +82,7 @@ func _cache_mission_widgets() -> void:
 		if tex == null:
 			tex = TextureRect.new()
 			tex.name = "IconTexture"
-			tex.custom_minimum_size = Vector2(72, 72)
+			tex.custom_minimum_size = MISSION_ICON_SIZE
 			tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			tex.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -79,6 +92,8 @@ func _cache_mission_widgets() -> void:
 			tex.hide()
 			vbox.add_child(tex)
 			vbox.move_child(tex, 0)
+		else:
+			tex.custom_minimum_size = MISSION_ICON_SIZE
 		_mission_icon_textures.append(tex)
 		_mission_titles.append(vbox.get_node("Title") as Label)
 		_mission_progress.append(vbox.get_node("Progress") as Label)
@@ -106,13 +121,67 @@ func setup(max_time: float) -> void:
 func set_paused(paused: bool) -> void:
 	_is_paused = paused
 	pause_overlay.visible = paused and _victory_screen != null and not _victory_screen.visible
-	pause_button.text = "▶" if paused else "❚❚"
+	_UiIcons.mount_button_icon(
+		pause_button,
+		_UiIcons.Id.PLAY if paused else _UiIcons.Id.PAUSE,
+		40,
+		""
+	)
 
 
 func set_gameplay_hud_visible(visible: bool) -> void:
-	top_safe.visible = visible
+	if header_band:
+		header_band.visible = visible
+	elif top_safe:
+		top_safe.visible = visible
 	if hint_label:
 		hint_label.visible = visible
+
+
+func get_header_height() -> float:
+	return _header_height
+
+
+func get_header_rect() -> Rect2:
+	if header_band != null and header_band.visible:
+		return header_band.get_global_rect()
+	return Rect2(Vector2.ZERO, Vector2(get_viewport().get_visible_rect().size.x, _header_height))
+
+
+func get_header_bottom() -> float:
+	return get_header_rect().end.y
+
+
+func get_playable_screen_rect() -> Rect2:
+	var vr := get_viewport().get_visible_rect()
+	var safe := DisplayServer.get_display_safe_area()
+	var top := get_header_bottom()
+	var left := float(maxi(int(vr.position.x), safe.position.x))
+	var right := float(mini(int(vr.end.x), safe.end.x)) if safe.size.x > 0 else vr.end.x
+	var bottom := float(mini(int(vr.end.y), safe.end.y)) if safe.size.y > 0 else vr.end.y
+	if right <= left:
+		left = vr.position.x
+		right = vr.end.x
+	if bottom <= top:
+		bottom = vr.end.y
+	return Rect2(Vector2(left, top), Vector2(right - left, bottom - top))
+
+
+func _refresh_header_layout() -> void:
+	if header_band == null or top_safe == null:
+		return
+	# Prefer minimum size so the band stays compact (size.y can be inflated by anchors).
+	var content_h := top_safe.get_combined_minimum_size().y
+	if content_h < 160.0:
+		# Fallback estimate from known compact children.
+		content_h = 56.0 + 4.0 + 40.0 + 6.0 + 78.0 + 6.0 + 52.0
+		content_h += float(top_safe.get_theme_constant("margin_top") + top_safe.get_theme_constant("margin_bottom"))
+	_header_height = content_h + HEADER_BOTTOM_PAD
+	header_band.offset_top = 0.0
+	header_band.offset_bottom = _header_height
+	header_band.custom_minimum_size = Vector2(0, _header_height)
+	if pause_overlay:
+		pause_overlay.offset_top = _header_height
 
 
 func update_timer(seconds_left: float) -> void:
@@ -155,10 +224,13 @@ func update_missions(missions: Array) -> void:
 			_mission_icons[i].hide()
 			_mission_icon_textures[i].show()
 			_mission_icon_textures[i].texture = mission.icon_texture
+			_mission_icon_textures[i].expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			_mission_icon_textures[i].stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			_mission_icon_textures[i].modulate = Color.WHITE
 			_mission_icon_textures[i].self_modulate = Color.WHITE
 			_mission_icon_textures[i].texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
-			_mission_icon_textures[i].custom_minimum_size = Vector2(72, 72)
+			_mission_icon_textures[i].custom_minimum_size = MISSION_ICON_SIZE
+			_mission_icon_textures[i].size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		else:
 			_mission_icon_textures[i].hide()
 			_mission_icon_textures[i].texture = null
@@ -175,6 +247,7 @@ func update_missions(missions: Array) -> void:
 			else:
 				owned.bg_color = Color(0.22, 0.48, 0.88, 0.95)
 			_mission_cards[i].add_theme_stylebox_override("panel", owned)
+	call_deferred("_refresh_header_layout")
 
 
 func update_score(score: int) -> void:
@@ -237,34 +310,74 @@ func _on_game_over_retry() -> void:
 	restart_pressed.emit()
 
 
+func _apply_android_icons() -> void:
+	_UiIcons.mount_button_icon(settings_button, _UiIcons.Id.GEAR, 40, "")
+	_UiIcons.mount_button_icon(pause_button, _UiIcons.Id.PAUSE, 40, "")
+	var coin_icon := find_child("CoinHudIcon", true, false) as Label
+	if coin_icon:
+		_UiIcons.replace_label_with_icon(coin_icon, _UiIcons.Id.COIN, 32)
+	var score_icon := find_child("ScoreIcon", true, false) as Label
+	if score_icon:
+		_UiIcons.replace_label_with_icon(score_icon, _UiIcons.Id.STAR, 32)
+
+
 func _apply_safe_area() -> void:
 	if top_safe == null:
 		return
-	var margin := DisplayServer.get_display_safe_area()
-	var extra_top := maxi(0, margin.position.y)
-	var extra_left := maxi(0, margin.position.x)
-	var extra_right := maxi(0, int(get_viewport().get_visible_rect().size.x) - margin.end.x)
-	top_safe.add_theme_constant_override("margin_top", 20 + extra_top)
-	top_safe.add_theme_constant_override("margin_left", 20 + extra_left)
-	top_safe.add_theme_constant_override("margin_right", 20 + extra_right)
+	var extra_top := 0
+	var extra_left := 0
+	var extra_right := 0
+	var safe := DisplayServer.get_display_safe_area()
+	var win := get_window()
+	if win != null:
+		# Convert display-space safe rect into this window's local coordinates.
+		var win_pos := win.position
+		var win_size := win.size
+		extra_top = maxi(0, safe.position.y - win_pos.y)
+		extra_left = maxi(0, safe.position.x - win_pos.x)
+		extra_right = maxi(0, (win_pos.x + win_size.x) - safe.end.x)
+	else:
+		extra_top = maxi(0, safe.position.y)
+		extra_left = maxi(0, safe.position.x)
+		extra_right = maxi(0, int(get_viewport().get_visible_rect().size.x) - safe.end.x)
+	# Keep mobile notch insets; clamp desktop false-positives that inflate the HUD.
+	extra_top = clampi(extra_top, 0, 80)
+	extra_left = clampi(extra_left, 0, 40)
+	extra_right = clampi(extra_right, 0, 40)
+	top_safe.add_theme_constant_override("margin_top", 10 + extra_top)
+	top_safe.add_theme_constant_override("margin_left", 12 + extra_left)
+	top_safe.add_theme_constant_override("margin_right", 12 + extra_right)
+	top_safe.add_theme_constant_override("margin_bottom", 8)
 
 
 func _apply_ui_theme() -> void:
-	score_panel.add_theme_stylebox_override("panel", UIStyles.glossy_panel(UIStyles.COLOR_PRIMARY, 20, 3.0))
+	if header_band:
+		var band := StyleBoxFlat.new()
+		band.bg_color = Color(0.07, 0.16, 0.34, 0.98)
+		band.set_corner_radius_all(0)
+		band.border_color = Color(1.0, 1.0, 1.0, 0.18)
+		band.border_width_bottom = 2
+		band.shadow_color = Color(0.02, 0.05, 0.12, 0.45)
+		band.shadow_size = 8
+		band.shadow_offset = Vector2(0, 3)
+		header_band.add_theme_stylebox_override("panel", band)
+	score_panel.add_theme_stylebox_override("panel", UIStyles.glossy_panel(UIStyles.COLOR_PRIMARY, 16, 2.5))
 	if coin_panel:
-		coin_panel.add_theme_stylebox_override("panel", UIStyles.glossy_panel(Color(0.42, 0.34, 0.1, 0.96), 20, 3.0))
+		coin_panel.add_theme_stylebox_override("panel", UIStyles.glossy_panel(Color(0.42, 0.34, 0.1, 0.96), 16, 2.5))
 	for card in _mission_cards:
-		card.add_theme_stylebox_override("panel", UIStyles.glossy_panel(UIStyles.COLOR_PRIMARY_DARK, 18, 3.0))
+		card.add_theme_stylebox_override("panel", UIStyles.glossy_panel(UIStyles.COLOR_PRIMARY_DARK, 14, 2.5))
 
 	timer_bar.add_theme_stylebox_override("background", UIStyles.progress_track_style())
 	timer_bar.add_theme_stylebox_override("fill", UIStyles.progress_fill_style())
 
-	UIStyles.style_secondary_button(pause_button, 22)
-	UIStyles.style_secondary_button(menu_button, 20)
-	UIStyles.style_gold_button(settings_button, 22)
-	UIStyles.apply_cartoon_label(score_label, 34, 6)
-	UIStyles.apply_cartoon_label(coin_label, 34, 6)
+	UIStyles.style_secondary_button(pause_button, 20)
+	UIStyles.style_secondary_button(menu_button, 18)
+	UIStyles.style_gold_button(settings_button, 20)
+	UIStyles.apply_cartoon_label(score_label, 28, 5)
+	UIStyles.apply_cartoon_label(coin_label, 28, 5)
 	coin_label.add_theme_color_override("font_color", Color(1.0, 0.92, 0.35))
+	if timer_label:
+		UIStyles.apply_cartoon_label(timer_label, 28, 5)
 
 
 func _make_panel_style(bg: Color, corner: int = 20) -> StyleBoxFlat:

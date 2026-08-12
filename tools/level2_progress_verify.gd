@@ -7,10 +7,12 @@ func _ready() -> void:
 	await get_tree().process_frame
 	var failed := 0
 	failed += _check_plan_consistency()
+	failed += _check_icon_sizes()
 	failed += await _check_collect_progress()
 	if failed > 0:
 		push_error("[L2PROG] FAILED %d" % failed)
 		get_tree().quit(1)
+		return
 	print("[L2PROG] PASSED")
 	get_tree().quit(0)
 
@@ -33,6 +35,22 @@ func _check_plan_consistency() -> int:
 		if entry != null and entry.size_class > ItemEntry.SizeClass.SMALL:
 			push_error("[L2PROG] target too large for L2: %s class=%d" % [mission.catalog_key, entry.size_class])
 			return 1
+	return 0
+
+
+func _check_icon_sizes() -> int:
+	var theme := LevelTheme.theme_for_level(2)
+	var plan := LevelPlan.for_level(2, MissionFactory.category_for_theme(theme))
+	var missions := MissionFactory.create_missions(theme, 2, plan)
+	for m in missions:
+		var mission := m as Mission
+		if mission.icon_texture == null:
+			push_error("[L2PROG] missing icon_texture for %s" % mission.catalog_key)
+			return 1
+		if mission.icon_texture.get_width() < 16 or mission.icon_texture.get_height() < 16:
+			push_error("[L2PROG] tiny icon for %s" % mission.catalog_key)
+			return 1
+	print("[L2PROG] OK mission icon sizes")
 	return 0
 
 

@@ -5,6 +5,7 @@ const FoodScene: PackedScene = preload("res://scenes/food.tscn")
 const START_HOLE_CLEAR_RADIUS: float = 230.0
 
 signal food_collected(food: Food)
+signal food_swallow_fx(food: Food)
 
 var _foods: Array[Food] = []
 var _placed_positions: Array[Vector2] = []
@@ -217,14 +218,14 @@ func ensure_catalog_count(
 		return have
 
 	var zones: Array[Vector2] = [
-		origin + Vector2(900.0, 1100.0),
-		origin + Vector2(2300.0, 1100.0),
+		origin + Vector2(900.0, 1200.0),
+		origin + Vector2(2300.0, 1200.0),
 		origin + Vector2(1600.0, 2300.0),
 		origin + Vector2(700.0, 2020.0),
 		origin + Vector2(2500.0, 2020.0),
-		origin + Vector2(1100.0, 980.0),
-		origin + Vector2(2100.0, 980.0),
-		origin + Vector2(1600.0, 700.0),
+		origin + Vector2(1100.0, 1100.0),
+		origin + Vector2(2100.0, 1100.0),
+		origin + Vector2(1600.0, 900.0),
 	]
 
 	var rng := RandomNumberGenerator.new()
@@ -256,10 +257,10 @@ func ensure_catalog_count(
 
 	# Phase 3: last-resort grid in open corners (minimal spacing).
 	var corners: Array[Vector2] = [
-		origin + Vector2(520.0, 520.0),
-		origin + Vector2(2680.0, 520.0),
-		origin + Vector2(520.0, 2680.0),
-		origin + Vector2(2680.0, 2680.0),
+		origin + Vector2(620.0, 820.0),
+		origin + Vector2(2580.0, 820.0),
+		origin + Vector2(620.0, 2580.0),
+		origin + Vector2(2580.0, 2580.0),
 	]
 	for corner in corners:
 		have = count_catalog_key(key)
@@ -331,6 +332,7 @@ func _try_spawn(
 	var food: Food = FoodScene.instantiate() as Food
 	food.setup(pos, slot as Food.Collectible, _theme, tier, mission_highlight)
 	food.collected.connect(_on_food_collected)
+	food.swallow_fx.connect(_on_food_swallow_fx)
 	add_child(food)
 	_foods.append(food)
 	_placed_positions.append(pos)
@@ -356,6 +358,7 @@ func _try_spawn_catalog(
 		return false
 	food.setup_catalog(pos, entry, _theme, mission_highlight, scale)
 	food.collected.connect(_on_food_collected)
+	food.swallow_fx.connect(_on_food_swallow_fx)
 	add_child(food)
 	_foods.append(food)
 	_placed_positions.append(pos)
@@ -419,3 +422,7 @@ func _on_food_collected(food: Food) -> void:
 		_placed_padding.remove_at(idx)
 	_foods.erase(food)
 	food_collected.emit(food)
+
+
+func _on_food_swallow_fx(food: Food) -> void:
+	food_swallow_fx.emit(food)

@@ -2,6 +2,8 @@ class_name Food
 extends Area2D
 
 signal collected(food: Food)
+## Emitted once when the item visibly enters the hole (SFX timing).
+signal swallow_fx(food: Food)
 
 ## Collectible slot 0–4 for the active level theme (see LevelTheme).
 enum Collectible {
@@ -41,11 +43,15 @@ var _collect_elapsed: float = 0.0
 var _collect_duration: float = 0.45
 var _approach_duration: float = 0.18
 var _inside_duration: float = 0.28
-var _fade_duration: float = 0.14
+var _fade_duration: float = 0.12
 var _collect_start_pos: Vector2 = Vector2.ZERO
 var _collect_wobble_phase: float = 0.0
 var _inside_hole: bool = false
 var _sink_offset_y: float = 0.0
+var _playfield_blocked: bool = false
+var _fx_emitted: bool = false
+var _collection_finalized: bool = false
+var _was_inside_phase: bool = false
 
 
 func _ready() -> void:
@@ -54,6 +60,23 @@ func _ready() -> void:
 	collision_mask = 0
 	_bob_phase = randf() * TAU
 	queue_redraw()
+
+
+## When true, this item is under the HUD header and must not be interactive.
+func set_playfield_blocked(blocked: bool) -> void:
+	if _collecting:
+		return
+	if _playfield_blocked == blocked:
+		return
+	_playfield_blocked = blocked
+	visible = not blocked
+	monitoring = not blocked
+	monitorable = not blocked
+	collision_layer = 0 if blocked else 2
+
+
+func is_playfield_blocked() -> bool:
+	return _playfield_blocked
 
 
 func setup(
@@ -166,7 +189,7 @@ func is_busy() -> bool:
 
 
 func try_collect(hole: Hole) -> bool:
-	if _collecting:
+	if _collecting or _playfield_blocked:
 		return false
 	if not can_be_swallowed_by(hole):
 		if _feedback_timer <= 0.0:
@@ -178,12 +201,15 @@ func try_collect(hole: Hole) -> bool:
 
 func _start_collect_animation(hole: Hole) -> void:
 	_collecting = true
+	_collection_finalized = false
+	_fx_emitted = false
+	_was_inside_phase = false
 	_collect_hole = hole
 	_collect_elapsed = 0.0
 	var phase_times := ItemSizeTier.collect_phase_times(size_tier)
 	_approach_duration = phase_times.x
 	_inside_duration = phase_times.y
-	_fade_duration = 0.14
+	_fade_duration = 0.12
 	_collect_duration = _approach_duration + _inside_duration + _fade_duration
 	_collect_wobble_phase = randf() * TAU
 	_inside_hole = false
@@ -194,15 +220,24 @@ func _start_collect_animation(hole: Hole) -> void:
 	_draw_alpha = 1.0
 
 	collision_layer = 0
-	monitoring = false
-	monitorable = false
+	# Defer physics flag / reparent — overlap callbacks run while queries are flushing.
+	set_deferred("monitoring", false)
+	set_deferred("monitorable", false)
+	call_deferred("_attach_to_hole_for_swallow")
 
+
+func _attach_to_hole_for_swallow() -> void:
+	if not _collecting or _collect_hole == null or not is_instance_valid(_collect_hole):
+		return
+	if get_parent() == _collect_hole:
+		return
 	# Parent under hole: draws above black pit, below rim (item stays visible while falling in).
 	var world_pos := global_position
-	hole.add_child(self)
+	reparent(_collect_hole)
 	global_position = world_pos
 	_collect_start_pos = position
 	z_index = 5
+	visible = true
 
 
 func _approach_curve(t: float) -> float:
@@ -213,6 +248,8 @@ func _update_collect_animation(delta: float) -> void:
 	if _collect_hole == null or not is_instance_valid(_collect_hole):
 		_finish_collect()
 		return
+	if _collect_hole.is_paused():
+		return
 
 	_collect_elapsed += delta
 	_inside_hole = false
@@ -220,6 +257,9 @@ func _update_collect_animation(delta: float) -> void:
 	if _collect_elapsed < _approach_duration:
 		_update_approach_phase(delta)
 	elif _collect_elapsed < _approach_duration + _inside_duration:
+		if not _was_inside_phase:
+			_was_inside_phase = true
+			_emit_swallow_fx_once()
 		_update_inside_phase(delta)
 	elif _collect_elapsed < _collect_duration:
 		_update_fade_phase()
@@ -227,19 +267,28 @@ func _update_collect_animation(delta: float) -> void:
 		_finish_collect()
 
 
+func _emit_swallow_fx_once() -> void:
+	if _fx_emitted:
+		return
+	_fx_emitted = true
+	swallow_fx.emit(self)
+
+
 func _update_approach_phase(delta: float) -> void:
 	var at := clampf(_collect_elapsed / _approach_duration, 0.0, 1.0)
 	var suction := _approach_curve(at)
-	_fall_depth = suction * 0.25
+	_fall_depth = suction * 0.35
 
 	_collect_wobble_phase += delta * 11.0
 	var wobble_amp := (1.0 - suction) * (8.0 + float(size_tier) * 1.5)
 	var wobble := Vector2(cos(_collect_wobble_phase), sin(_collect_wobble_phase * 1.15)) * wobble_amp
 	position = _collect_start_pos.lerp(Vector2.ZERO, suction) + wobble
 
-	_draw_scale = 1.0
+	# Stay fully readable while sliding into the pit.
+	_draw_scale = lerpf(1.0, 0.88, suction)
 	_draw_alpha = 1.0
-	_sink_offset_y = lerpf(0.0, 6.0, suction)
+	_sink_offset_y = lerpf(0.0, 10.0, suction)
+	_draw_rotation += delta * 1.5 * suction
 
 
 func _update_inside_phase(delta: float) -> void:
@@ -247,17 +296,17 @@ func _update_inside_phase(delta: float) -> void:
 	var it := clampf(
 		(_collect_elapsed - _approach_duration) / _inside_duration, 0.0, 1.0
 	)
-	_fall_depth = lerpf(0.25, 1.0, it)
+	_fall_depth = lerpf(0.35, 1.0, it)
 
 	_collect_wobble_phase += delta * 5.0
 	var wobble := Vector2(cos(_collect_wobble_phase), sin(_collect_wobble_phase * 1.1)) * (2.5 * (1.0 - it))
 	position = wobble
 
-	_draw_rotation += delta * (2.0 + float(size_tier) * 0.35)
-	# Stay large and readable while sitting inside the pit.
-	_draw_scale = lerpf(1.0, 0.42, it * 0.75)
+	_draw_rotation += delta * (2.2 + float(size_tier) * 0.4)
+	# Shrink while sinking so the fall into the hole is obvious.
+	_draw_scale = lerpf(0.88, 0.38, it)
 	_draw_alpha = 1.0
-	_sink_offset_y = lerpf(6.0, 24.0 + float(size_tier) * 2.0, it)
+	_sink_offset_y = lerpf(10.0, 22.0 + float(size_tier) * 2.0, it)
 
 
 func _update_fade_phase() -> void:
@@ -267,17 +316,20 @@ func _update_fade_phase() -> void:
 	)
 	_fall_depth = 1.0
 	position = Vector2.ZERO
-	var scale_inside_end := lerpf(1.0, 0.42, 0.75)
 	_sink_offset_y = lerpf(_sink_offset_y, 28.0 + float(size_tier) * 2.0, ft)
-	_draw_scale = lerpf(scale_inside_end, 0.0, ft * ft)
+	_draw_scale = lerpf(0.38, 0.05, ft * ft)
 	_draw_alpha = lerpf(1.0, 0.0, ft)
 
 
 func _finish_collect() -> void:
+	if _collection_finalized:
+		return
+	_collection_finalized = true
+	_emit_swallow_fx_once()
 	if _collect_hole != null and is_instance_valid(_collect_hole):
 		_collect_hole.pulse_swallow()
 
-	# Collection SFX is chosen in Game after mission-target check (normal vs target).
+	# Collection SFX is chosen in Game on swallow_fx; rewards finalize here once.
 	GameSettings.vibrate(30)
 	collected.emit(self)
 	queue_free()

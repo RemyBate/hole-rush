@@ -9,6 +9,8 @@ var category: String = "fruits"
 var image_id: int = 0
 var path: String = ""
 var texture: Texture2D = null
+## Baked/cropped HUD preview when CPU image data is available; otherwise equals texture.
+var hud_preview: Texture2D = null
 var size_class: int = SizeClass.MEDIUM
 ## Half of on-field visual diameter (world px).
 var visual_radius: float = 38.0
@@ -39,25 +41,11 @@ func visual_diameter() -> float:
 	return visual_radius * 2.0
 
 
-## Runtime HUD preview — baked ImageTexture for reliable mobile display.
+## Runtime HUD preview — prefer baked ImageTexture; never emoji / AtlasTexture.
 func hud_texture() -> Texture2D:
-	if texture == null:
-		return null
-	if content_rect.size.x < 4 or content_rect.size.y < 4:
-		return texture
-	var img := texture.get_image()
-	if img == null:
-		return texture
-	if img.get_format() != Image.FORMAT_RGBA8:
-		img = img.duplicate()
-		img.convert(Image.FORMAT_RGBA8)
-	else:
-		img = img.duplicate()
-	var region := content_rect.intersection(Rect2i(0, 0, img.get_width(), img.get_height()))
-	if region.size.x < 4 or region.size.y < 4:
-		return texture
-	var cropped := img.get_region(region)
-	return ImageTexture.create_from_image(cropped)
+	if hud_preview != null:
+		return hud_preview
+	return texture
 
 
 static func radius_for_class(size_class: int) -> float:

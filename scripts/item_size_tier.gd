@@ -37,16 +37,17 @@ static func tier_name(tier: int) -> String:
 
 
 ## Returns Vector2(approach_seconds, inside_hole_seconds) before fade-out.
+## Totals (with ~0.12s fade) stay ~0.25–0.45s for playable tiers.
 static func collect_phase_times(tier: int) -> Vector2:
-	var approach: Array[float] = [0.14, 0.16, 0.20, 0.24, 0.28, 0.32]
-	var inside: Array[float] = [0.22, 0.28, 0.48, 0.68, 0.82, 0.95]
+	var approach: Array[float] = [0.12, 0.14, 0.16, 0.18, 0.20, 0.22]
+	var inside: Array[float] = [0.10, 0.12, 0.16, 0.20, 0.26, 0.30]
 	var idx := clampi(tier, 0, TIER_COUNT - 1)
 	return Vector2(approach[idx], inside[idx])
 
 
 static func collect_duration(tier: int) -> float:
 	var phases := collect_phase_times(tier)
-	const FADE_TIME: float = 0.14
+	const FADE_TIME: float = 0.12
 	return phases.x + phases.y + FADE_TIME
 
 

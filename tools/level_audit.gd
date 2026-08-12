@@ -12,6 +12,7 @@ func _ready() -> void:
 	if failed > 0:
 		push_error("[LevelAudit] FAILED %d level(s)" % failed)
 		get_tree().quit(1)
+		return
 	print("[LevelAudit] PASSED all %d levels" % LevelTheme.MAX_LEVEL)
 	get_tree().quit(0)
 

@@ -1,11 +1,12 @@
 extends Node
+const _SafeCapture := preload("res://tools/safe_viewport_capture.gd")
 
 ## Graphical verify: light-green field + larger sized catalog fruits at 405×720.
 
 
 func _ready() -> void:
 	await get_tree().process_frame
-	ItemCatalog.reload()
+	ItemCatalog.reload_category()
 	ItemCatalog.ensure_loaded(ItemCatalog.CATEGORY_FRUITS)
 
 	var failed := 0
@@ -70,13 +71,18 @@ func _check(level: int) -> int:
 			push_error("[BGSIZE] smallest item below readable floor")
 			failed += 1
 
-	RenderingServer.force_draw()
-	await get_tree().process_frame
-	var img: Image = get_viewport().get_texture().get_image()
-	if img:
-		var path := ProjectSettings.globalize_path("res://tools/bgsize_l%d_verify.png" % level)
-		img.save_png(path)
-		print("[BGSIZE] screenshot=", path)
+	var path := ProjectSettings.globalize_path("res://tools/bgsize_l%d_verify.png" % level)
+	if _SafeCapture.is_headless():
+		print("[BGSIZE] skip headless screenshot ", path)
+	else:
+		RenderingServer.force_draw()
+		await get_tree().process_frame
+		var tex := get_viewport().get_texture()
+		if tex != null:
+			var img: Image = tex.get_image()
+			if img:
+				img.save_png(path)
+				print("[BGSIZE] screenshot=", path)
 
 	game.queue_free()
 	await get_tree().process_frame

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://hudlayoutshot01"]
+
+[ext_resource type="Script" path="res://tools/hud_layout_shot.gd" id="1"]
+
+[node name="HudLayoutShot" type="Node"]
+script = ExtResource("1")

@@ -15,6 +15,8 @@ var _collect_hole: Hole = null
 var _collect_start: Vector2 = Vector2.ZERO
 var _draw_scale: float = 1.0
 var _draw_alpha: float = 1.0
+var _playfield_blocked: bool = false
+var _collection_finalized: bool = false
 
 
 func _ready() -> void:
@@ -23,6 +25,22 @@ func _ready() -> void:
 	collision_mask = 0
 	_bob_phase = randf() * TAU
 	queue_redraw()
+
+
+func set_playfield_blocked(blocked: bool) -> void:
+	if _collecting:
+		return
+	if _playfield_blocked == blocked:
+		return
+	_playfield_blocked = blocked
+	visible = not blocked
+	monitoring = not blocked
+	monitorable = not blocked
+	collision_layer = 0 if blocked else 2
+
+
+func get_visual_radius() -> float:
+	return _radius
 
 
 func setup(position: Vector2, kind: CurrencyArt.Kind, gem_color_index: int = 0) -> void:
@@ -45,7 +63,7 @@ func is_busy() -> bool:
 
 
 func try_collect(hole: Hole) -> bool:
-	if _collecting:
+	if _collecting or _playfield_blocked:
 		return false
 	# Match food swallow rule: hole radius must cover the pickup's visual size.
 	var need := _radius * GameConstants.SWALLOW_FIT_RATIO
@@ -59,13 +77,23 @@ func try_collect(hole: Hole) -> bool:
 
 func _start_collect(hole: Hole) -> void:
 	_collecting = true
+	_collection_finalized = false
 	_collect_hole = hole
 	_collect_elapsed = 0.0
 	collision_layer = 0
-	monitoring = false
-	monitorable = false
+	# Defer physics flag / reparent — area_entered runs while queries are flushing.
+	set_deferred("monitoring", false)
+	set_deferred("monitorable", false)
+	call_deferred("_attach_to_hole_for_swallow")
+
+
+func _attach_to_hole_for_swallow() -> void:
+	if not _collecting or _collect_hole == null or not is_instance_valid(_collect_hole):
+		return
+	if get_parent() == _collect_hole:
+		return
 	var world_pos := global_position
-	hole.add_child(self)
+	reparent(_collect_hole)
 	global_position = world_pos
 	_collect_start = position
 	z_index = 5
@@ -73,6 +101,9 @@ func _start_collect(hole: Hole) -> void:
 
 func _process(delta: float) -> void:
 	if _collecting:
+		if _collect_hole != null and is_instance_valid(_collect_hole) and _collect_hole.is_paused():
+			queue_redraw()
+			return
 		_collect_elapsed += delta
 		var t := clampf(_collect_elapsed / _collect_duration, 0.0, 1.0)
 		var eased := t * t * (3.0 - 2.0 * t)
@@ -88,6 +119,9 @@ func _process(delta: float) -> void:
 
 
 func _finish_collect() -> void:
+	if _collection_finalized:
+		return
+	_collection_finalized = true
 	if _collect_hole != null and is_instance_valid(_collect_hole):
 		_collect_hole.pulse_swallow()
 	collected.emit(self)

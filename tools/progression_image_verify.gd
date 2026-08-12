@@ -1,4 +1,5 @@
 extends Node
+const _SafeCapture := preload("res://tools/safe_viewport_capture.gd")
 
 ## Graphical verify: L1/L2/L3 numbered images, image-only HUD, no watermelon test.
 
@@ -116,7 +117,11 @@ func _check_level(level: int, expect_missions: int) -> int:
 
 	RenderingServer.force_draw()
 	await get_tree().process_frame
-	var img: Image = get_viewport().get_texture().get_image()
+	var img: Image = null
+	if not _SafeCapture.is_headless():
+		var _tex := get_viewport().get_texture()
+		if _tex != null:
+			img = _tex.get_image()
 	if img:
 		var path := ProjectSettings.globalize_path("res://tools/prog_l%d_verify.png" % level)
 		img.save_png(path)

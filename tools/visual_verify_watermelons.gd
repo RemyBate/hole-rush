@@ -1,4 +1,5 @@
 extends Node
+const _SafeCapture := preload("res://tools/safe_viewport_capture.gd")
 
 ## Graphical runtime verification: Fruit Garden watermelons + mission cards.
 ## Saves a PNG screenshot of the playable camera view.
@@ -55,21 +56,26 @@ func _ready() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 
-	var img: Image = get_viewport().get_texture().get_image()
-	if img == null:
+	var img: Image = null
+	if _SafeCapture.is_headless():
+		print("[VIS] skip headless screenshot")
+	else:
+		var tex := get_viewport().get_texture()
+		if tex != null:
+			img = tex.get_image()
+	if img == null and not _SafeCapture.is_headless():
 		push_error("[VIS] screenshot failed")
 		get_tree().quit(1)
 		return
 
-	var out_path := "user://watermelon_runtime_verify.png"
-	var err := img.save_png(out_path)
-	var abs_path := ProjectSettings.globalize_path(out_path)
-	print("[VIS] screenshot err=", err, " path=", abs_path)
-
-	# Also copy next to project for easy inspection.
-	var project_copy := "res://tools/watermelon_runtime_verify.png"
-	img.save_png(ProjectSettings.globalize_path(project_copy))
-	print("[VIS] project copy=", ProjectSettings.globalize_path(project_copy))
+	if img != null:
+		var out_path := "user://watermelon_runtime_verify.png"
+		var err := img.save_png(out_path)
+		var abs_path := ProjectSettings.globalize_path(out_path)
+		print("[VIS] screenshot err=", err, " path=", abs_path)
+		var project_copy := "res://tools/watermelon_runtime_verify.png"
+		img.save_png(ProjectSettings.globalize_path(project_copy))
+		print("[VIS] project copy=", ProjectSettings.globalize_path(project_copy))
 
 	var ok := false
 	if (

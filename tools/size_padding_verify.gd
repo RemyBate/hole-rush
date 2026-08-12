@@ -1,11 +1,12 @@
 extends Node
+const _SafeCapture := preload("res://tools/safe_viewport_capture.gd")
 
 ## Graphical verify: size classes + transparent padding compensation.
 
 
 func _ready() -> void:
 	await get_tree().process_frame
-	ItemCatalog.reload()
+	ItemCatalog.reload_category()
 	ItemCatalog.ensure_loaded(ItemCatalog.CATEGORY_FRUITS)
 	_report_padding()
 	var failed := await _showcase_classes()
@@ -157,7 +158,11 @@ func _showcase_classes() -> int:
 		await get_tree().process_frame
 	RenderingServer.force_draw()
 	await get_tree().process_frame
-	var img: Image = get_viewport().get_texture().get_image()
+	var img: Image = null
+	if not _SafeCapture.is_headless():
+		var _tex := get_viewport().get_texture()
+		if _tex != null:
+			img = _tex.get_image()
 	if img:
 		var path := ProjectSettings.globalize_path("res://tools/sizepad_classes_verify.png")
 		img.save_png(path)
@@ -211,7 +216,11 @@ func _check_level(level: int) -> int:
 
 	RenderingServer.force_draw()
 	await get_tree().process_frame
-	var img: Image = get_viewport().get_texture().get_image()
+	var img: Image = null
+	if not _SafeCapture.is_headless():
+		var _tex := get_viewport().get_texture()
+		if _tex != null:
+			img = _tex.get_image()
 	if img:
 		var path := ProjectSettings.globalize_path("res://tools/sizepad_l%d_verify.png" % level)
 		img.save_png(path)

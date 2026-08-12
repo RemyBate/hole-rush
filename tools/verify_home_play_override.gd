@@ -1,4 +1,5 @@
 extends Node
+const _SafeCapture := preload("res://tools/safe_viewport_capture.gd")
 
 ## Graphical verify: home shows TEST LEVEL 1 and Play launches Fruit Garden.
 
@@ -33,9 +34,15 @@ func _ready() -> void:
 	# Capture home screenshot.
 	RenderingServer.force_draw()
 	await get_tree().process_frame
-	var home_img: Image = get_viewport().get_texture().get_image()
-	home_img.save_png(ProjectSettings.globalize_path("res://tools/home_test_level_verify.png"))
-	print("[HOME] saved tools/home_test_level_verify.png")
+	if not _SafeCapture.is_headless():
+		var home_tex := get_viewport().get_texture()
+		if home_tex != null:
+			var home_img: Image = home_tex.get_image()
+			if home_img != null:
+				home_img.save_png(ProjectSettings.globalize_path("res://tools/home_test_level_verify.png"))
+				print("[HOME] saved tools/home_test_level_verify.png")
+	else:
+		print("[HOME] skip headless screenshot")
 
 	# Simulate launching as if prep emitted the saved level 22.
 	var launched := {"level": -1}
@@ -77,9 +84,15 @@ func _ready() -> void:
 
 	RenderingServer.force_draw()
 	await get_tree().process_frame
-	var game_img: Image = get_viewport().get_texture().get_image()
-	game_img.save_png(ProjectSettings.globalize_path("res://tools/play_from_home_verify.png"))
-	print("[HOME] saved tools/play_from_home_verify.png")
+	if not _SafeCapture.is_headless():
+		var game_tex := get_viewport().get_texture()
+		if game_tex != null:
+			var game_img: Image = game_tex.get_image()
+			if game_img != null:
+				game_img.save_png(ProjectSettings.globalize_path("res://tools/play_from_home_verify.png"))
+				print("[HOME] saved tools/play_from_home_verify.png")
+	else:
+		print("[HOME] skip headless gameplay screenshot")
 
 	# Confirm save file still has 22.
 	var progress_path := ProjectSettings.globalize_path("user://progress.save")

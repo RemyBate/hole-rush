@@ -1,0 +1,6 @@
+hole_control_position_absolute_v2
+set_from_control_position
+control_position_to_world
+compute_visibility_offset_world
+pointer_visibility_offset
+touch_visibility_margin

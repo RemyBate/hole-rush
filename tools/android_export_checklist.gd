@@ -233,7 +233,7 @@ func _check_control_position_movement() -> int:
 		push_error("[AEXPORT] smoothing lag present")
 		failed += 1
 
-	# Source-level markers that survive packaging intent (readable before compile).
+	# Source-level markers in hole.gd (readable before compile).
 	var src := FileAccess.get_file_as_string("res://scripts/hole.gd")
 	for marker in [
 		"set_from_control_position",
@@ -247,6 +247,19 @@ func _check_control_position_movement() -> int:
 		if not src.contains(marker):
 			push_error("[AEXPORT] hole.gd missing marker %s" % marker)
 			failed += 1
+
+	# Packaged plain-text marker (survives compiled-script stripping in AABs).
+	var mode_path := "res://data/control_position_mode.txt"
+	if not FileAccess.file_exists(mode_path):
+		push_error("[AEXPORT] missing %s" % mode_path)
+		failed += 1
+	else:
+		var mode_txt := FileAccess.get_file_as_string(mode_path)
+		if not mode_txt.contains("hole_control_position_absolute_v2"):
+			push_error("[AEXPORT] control_position_mode.txt missing absolute marker")
+			failed += 1
+		else:
+			print("[AEXPORT] OK packaged control-position mode marker")
 
 	hole.queue_free()
 	if failed == 0:
